@@ -23,4 +23,4 @@ Criar uma experiência digital premium para uma barbearia brasileira no Japão, 
 
 ## Status
 
-Projeto em desenvolvimento.
+Projeto usado para praticar Git e GitHub.
