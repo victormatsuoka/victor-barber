@@ -23,4 +23,5 @@ Criar uma experiência digital premium para uma barbearia brasileira no Japão, 
 
 ## Status
 
-Projeto usado para praticar Git e GitHub.
+Projeto desenvolvido como solução de presença digital para uma barbearia brasileira no Japão e utilizado também para aplicar versionamento com Git e GitHub.
+
