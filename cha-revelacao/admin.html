@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel — Miguel ou Zoe?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#faf7f1; --ink:#4b4237; --ink-soft:#948674;
+    --gold:#b39760; --hairline:#e7dfd2; --card:#fffdf9;
+    --salvia:#7d9471; --erro:#a3564e;
+    --serif:'Cormorant Garamond',serif; --body:'Jost',sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  [hidden]{display:none !important;}
+  body{font-family:var(--body);font-weight:300;background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:var(--body);cursor:pointer;}
+  input,select,textarea{font-family:var(--body);font-weight:300;font-size:.92rem;color:var(--ink);border:1px solid var(--hairline);background:var(--card);padding:10px 12px;outline:none;border-radius:0;width:100%;}
+  input:focus,select:focus,textarea:focus{border-color:var(--gold);}
+  .btn{border:1px solid var(--ink);background:transparent;color:var(--ink);padding:11px 20px;font-size:.72rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;transition:.2s;}
+  .btn:hover{background:var(--ink);color:var(--paper);}
+  .btn--solid{background:var(--ink);color:var(--paper);}
+  .btn--mini{padding:7px 12px;font-size:.62rem;letter-spacing:.12em;}
+  .btn--ok{border-color:var(--salvia);color:var(--salvia);}
+  .btn--ok:hover{background:var(--salvia);color:#fff;}
+  .btn--no{border-color:var(--erro);color:var(--erro);}
+  .btn--no:hover{background:var(--erro);color:#fff;}
+  .pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.62rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;}
+  .pill--ok{background:#e4ecdd;color:#5a7350;}
+  .pill--warn{background:#f3e8cd;color:#8a6f35;}
+  .pill--off{background:#eee9df;color:var(--ink-soft);}
+  .pill--erro{background:#f3ded9;color:var(--erro);}
+
+  /* login */
+  .login{min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .login__box{width:100%;max-width:360px;background:var(--card);border:1px solid var(--hairline);padding:36px 30px;}
+  .login__box h1{font-family:var(--serif);font-weight:600;font-size:1.7rem;text-align:center;margin-bottom:4px;}
+  .login__box p{text-align:center;color:var(--ink-soft);font-size:.82rem;margin-bottom:24px;}
+  .login__box label{display:block;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin:14px 0 6px;}
+  .login__erro{color:var(--erro);font-size:.8rem;margin-top:12px;text-align:center;display:none;}
+  .aviso-demo{background:#f3e8cd;color:#8a6f35;text-align:center;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;padding:8px;}
+
+  /* estrutura */
+  .app{display:none;min-height:100svh;}
+  .app.ativa{display:block;}
+  .lateral{position:fixed;left:0;top:0;bottom:0;width:210px;background:var(--card);border-right:1px solid var(--hairline);padding:26px 0;display:none;flex-direction:column;z-index:20;}
+  .lateral__logo{font-family:var(--serif);font-weight:600;font-size:1.25rem;text-align:center;margin-bottom:26px;}
+  .lateral nav{flex:1;}
+  .lateral a{display:block;padding:12px 26px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);border-left:3px solid transparent;}
+  .lateral a.ativa{color:var(--ink);border-left-color:var(--gold);background:rgba(179,151,96,.06);}
+  .lateral__sair{margin:0 26px;}
+  .conteudo{padding:22px 16px 90px;}
+  .topo-mobile{position:sticky;top:0;z-index:15;background:rgba(250,247,241,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--hairline);display:flex;align-items:center;justify-content:space-between;padding:12px 16px;}
+  .topo-mobile strong{font-family:var(--serif);font-weight:600;font-size:1.1rem;}
+  .nav-inferior{position:fixed;bottom:0;left:0;right:0;z-index:20;background:var(--card);border-top:1px solid var(--hairline);display:flex;}
+  .nav-inferior a{flex:1;text-align:center;padding:10px 2px 12px;font-size:.56rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
+  .nav-inferior a.ativa{color:var(--gold);font-weight:500;}
+  .nav-inferior a span{display:block;font-size:1.05rem;margin-bottom:2px;}
+  @media(min-width:900px){
+    .lateral{display:flex;}
+    .topo-mobile,.nav-inferior{display:none;}
+    .conteudo{margin-left:210px;padding:34px 34px 60px;max-width:1150px;}
+  }
+
+  h2.titulo{font-family:var(--serif);font-weight:600;font-size:1.6rem;margin:6px 0 18px;}
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:22px;}
+  @media(min-width:700px){.cards{grid-template-columns:repeat(4,1fr);}}
+  .cardr{background:var(--card);border:1px solid var(--hairline);padding:16px;}
+  .cardr b{font-family:var(--serif);font-size:1.7rem;font-weight:600;display:block;line-height:1.1;}
+  .cardr span{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);}
+  .acoes-rapidas{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px;}
+  .ferramentas{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center;}
+  .ferramentas input[type=search]{max-width:260px;}
+  .ferramentas select{max-width:200px;width:auto;}
+  .lista-adm{display:grid;gap:8px;}
+  .item-adm{background:var(--card);border:1px solid var(--hairline);padding:14px 16px;}
+  .item-adm__topo{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;}
+  .item-adm strong{font-family:var(--serif);font-size:1.12rem;font-weight:600;}
+  .item-adm small{color:var(--ink-soft);font-size:.78rem;display:block;}
+  .item-adm__acoes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .grade-form{display:grid;gap:10px;margin-top:10px;}
+  @media(min-width:700px){.grade-form{grid-template-columns:1fr 1fr;}}
+  .grade-form label{font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:4px;}
+  .barra{height:14px;background:#efe9db;position:relative;}
+  .barra i{position:absolute;left:0;top:0;bottom:0;background:var(--gold);}
+  .fralda-baixa{outline:2px solid var(--erro);outline-offset:2px;}
+  .msg-card{background:var(--card);border:1px solid var(--hairline);padding:16px;}
+  .msg-card.nova{border-left:3px solid var(--gold);}
+  .msg-card p.texto{font-family:var(--serif);font-size:1.08rem;margin:8px 0;}
+  .img-gift{width:52px;height:52px;object-fit:cover;border:1px solid var(--hairline);background:#f3eee1;flex-shrink:0;}
+  .sem-img{width:52px;height:52px;display:flex;align-items:center;justify-content:center;background:#f3eee1;color:var(--gold);font-size:1.2rem;border:1px solid var(--hairline);flex-shrink:0;}
+  .linha-flex{display:flex;gap:12px;align-items:center;}
+  .vazio{color:var(--ink-soft);text-align:center;padding:30px;}
+  dialog{border:1px solid var(--hairline);background:var(--paper);padding:24px;max-width:560px;width:calc(100% - 32px);margin:auto;}
+  dialog::backdrop{background:rgba(75,66,55,.45);}
+  .toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 22px;font-size:.8rem;z-index:99;opacity:0;transition:opacity .3s;pointer-events:none;}
+  .toast.on{opacity:1;}
+  @media(min-width:900px){.toast{bottom:28px;}}
+
+  /* impressão bonita (PDF) */
+  @media print{
+    body *{visibility:hidden;}
+    #area-print,#area-print *{visibility:visible;}
+    #area-print{position:absolute;inset:0;padding:20px;}
+    .print-msg{page-break-inside:avoid;border:1px solid #ccc;padding:18px;margin-bottom:14px;font-family:var(--serif);}
+    .print-msg h3{font-size:1rem;margin-bottom:6px;}
+    .print-titulo{font-family:var(--serif);text-align:center;font-size:1.6rem;margin-bottom:20px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="tela-config" class="login" hidden>
+  <div class="login__box">
+    <h1>Painel de Victor &amp; Paula</h1>
+    <p>O Supabase ainda não foi configurado.</p>
+    <p style="text-align:left;font-size:.85rem;">1. Crie um projeto em supabase.com<br>2. Rode o arquivo <code>supabase/schema.sql</code> no SQL Editor<br>3. Crie os usuários de Victor e Paula em Auth &rarr; Users<br>4. Cole a URL e a anon key no topo de <code>admin.html</code> e do <code>index.html</code></p>
+    <p style="margin-top:16px;"><a class="btn" href="?demo=1" style="display:block;text-align:center;">Ver demonstração do painel</a></p>
+  </div>
+</div>
+
+<div id="tela-login" class="login" hidden>
+  <div class="login__box">
+    <h1>Painel de Victor &amp; Paula</h1>
+    <p>Área privada — Miguel ou Zoe?</p>
+    <form id="form-login">
+      <label for="l-email">E-mail</label>
+      <input id="l-email" type="email" autocomplete="username" required>
+      <label for="l-senha">Senha</label>
+      <input id="l-senha" type="password" autocomplete="current-password" required>
+      <button class="btn btn--solid" type="submit" style="width:100%;margin-top:20px;">Entrar</button>
+      <p class="login__erro" id="login-erro">E-mail ou senha inválidos, ou usuário sem permissão.</p>
+    </form>
+  </div>
+</div>
+
+<div id="app" class="app">
+  <div id="faixa-demo" class="aviso-demo" hidden>Modo demonstração — dados fictícios, nada é salvo</div>
+  <aside class="lateral">
+    <div class="lateral__logo">Miguel ou Zoe?</div>
+    <nav id="nav-lateral"></nav>
+    <button class="btn btn--mini lateral__sair" id="btn-sair">Sair</button>
+  </aside>
+  <div class="topo-mobile">
+    <strong id="topo-titulo">Início</strong>
+    <button class="btn btn--mini" id="btn-sair-m">Sair</button>
+  </div>
+  <main class="conteudo" id="conteudo"></main>
+  <nav class="nav-inferior" id="nav-inferior"></nav>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="area-print" hidden></div>
+
+<script type="module">
+/* =============== CONFIGURAÇÃO — cole as credenciais aqui =============== */
+const SUPABASE_URL = '';        // ex.: https://xxxx.supabase.co
+const SUPABASE_ANON_KEY = '';   // anon key (pública; RLS protege os dados)
+/* ======================================================================= */
+
+const DEMO = new URLSearchParams(location.search).has('demo');
+const TAMANHOS = ['新生児','S','M','L','Big'];
+const CATEGORIAS = ['Fraldas','Higiene','Banho','Roupinhas','Alimentação','Quarto','Passeio','Brinquedos','Outros'];
+const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fmtData = ts => ts ? new Date(ts).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '—';
+const toast = (t) => { const el = document.getElementById('toast'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 2600); };
+
+let sb = null;
+let DB = { guests:[], gifts:[], reservas:[], fraldas:[], msgs:[], prioridade:'' };
+
+/* ------------------------- driver de demonstração ------------------------- */
+function seedDemo(){
+  const g = (n,t,c,v,s='confirmed') => ({ id:crypto.randomUUID(), full_name:n, phone:t, companions:c, gender_vote:v, attendance_status:s, confirm_code:'0000', notes:'', arrived_at:null, created_at:new Date().toISOString() });
+  DB.guests = [
+    g('Família Tanaka','090-1111-2222',2,'miguel'), g('Ana Sato','080-3333-4444',0,'zoe'),
+    g('Bruno e Mie','070-5555-6666',1,'zoe'), g('Carlos Yamada','090-7777-8888',3,'miguel'),
+    g('Duda Kimura','080-9999-0000',0,null,'pending')
+  ];
+  DB.gifts = [
+    { id:'ba-banheira', name:'Banheira dobrável', category:'Banho', description:'Richell, fácil de guardar.', price_min_yen:2500, price_max_yen:4000, icon:'🛁', image_url:'', store_name:'Akachan Honpo', product_reference_url:'', color:'bege', display_order:10, featured:true, active:true },
+    { id:'br-urso', name:'Ursinho de pelúcia', category:'Brinquedos', description:'O primeiro amigo.', price_min_yen:1000, price_max_yen:2500, icon:'🧸', image_url:'', store_name:'Nishimatsuya', product_reference_url:'', color:'marrom-claro', display_order:20, featured:false, active:true },
+    { id:'qu-luminaria', name:'Luminária noturna', category:'Quarto', description:'Luz quente regulável.', price_min_yen:1500, price_max_yen:2800, icon:'💡', image_url:'', store_name:'Amazon Japan', product_reference_url:'', color:'branco', display_order:30, featured:false, active:true }
+  ];
+  DB.reservas = [
+    { id:crypto.randomUUID(), gift_id:'ba-banheira', guest_name:'Família Tanaka', guest_phone:'090-1111-2222', message:'Com carinho!', status:'reserved', reserved_at:new Date().toISOString(), received_at:null },
+    { id:crypto.randomUUID(), gift_id:'br-urso', guest_name:'Ana Sato', guest_phone:'080-3333-4444', message:'', status:'received', reserved_at:new Date().toISOString(), received_at:new Date().toISOString() }
+  ];
+  DB.fraldas = [
+    { id:crypto.randomUUID(), guest_name:'Família Tanaka', guest_phone:'090-1111-2222', size:'M', brand:'Merries', package_quantity:2, status:'promised', received_quantity:0 },
+    { id:crypto.randomUUID(), guest_name:'Ana Sato', guest_phone:'080-3333-4444', size:'M', brand:'Sem preferência', package_quantity:1, status:'received', received_quantity:1 },
+    { id:crypto.randomUUID(), guest_name:'Bruno e Mie', guest_phone:'070-5555-6666', size:'S', brand:'Moony', package_quantity:2, status:'promised', received_quantity:0 },
+    { id:crypto.randomUUID(), guest_name:'Carlos Yamada', guest_phone:'090-7777-8888', size:'L', brand:'GOO.N', package_quantity:1, status:'promised', received_quantity:0 }
+  ];
+  DB.msgs = [
+    { id:crypto.randomUUID(), guest_name:'Família Tanaka', guest_phone:'090-1111-2222', recipient_type:'baby', message:'Que você chegue cheio de saúde e alegria! Estamos ansiosos.', favorite:true, status:'new', created_at:new Date().toISOString() },
+    { id:crypto.randomUUID(), guest_name:'Ana Sato', guest_phone:'080-3333-4444', recipient_type:'miguel', message:'Miguel ou Zoe, você já é muito amado!', favorite:false, status:'read', created_at:new Date().toISOString() }
+  ];
+  DB.prioridade = 'Precisamos mais dos tamanhos M e L 💛';
+}
+
+/* ----------------------------- camada de dados ----------------------------- */
+const API = {
+  async carregar(){
+    if (DEMO) return;
+    const [g, gf, r, f, m, s] = await Promise.all([
+      sb.from('guests').select('*').order('created_at', { ascending:false }),
+      sb.from('gifts').select('*').order('display_order'),
+      sb.from('gift_reservations').select('*').order('reserved_at', { ascending:false }),
+      sb.from('diaper_choices').select('*').order('created_at', { ascending:false }),
+      sb.from('baby_messages').select('*').order('created_at', { ascending:false }),
+      sb.from('settings').select('*').eq('key','diaper_priority').maybeSingle()
+    ]);
+    DB.guests = g.data || []; DB.gifts = gf.data || []; DB.reservas = r.data || [];
+    DB.fraldas = f.data || []; DB.msgs = m.data || []; DB.prioridade = (s.data && s.data.value) || '';
+  },
+  async up(tabela, obj){
+    if (DEMO) { toast('Demonstração: nada foi salvo'); return { error:null }; }
+    const { error } = await sb.from(tabela).upsert(obj);
+    return { error };
+  },
+  async del(tabela, id){
+    if (DEMO) { toast('Demonstração: nada foi excluído'); return { error:null }; }
+    return await sb.from(tabela).delete().eq('id', id);
+  },
+  async prioridade(v){
+    if (DEMO) { DB.prioridade = v; return; }
+    await sb.from('settings').upsert({ key:'diaper_priority', value:v });
+  },
+  async uploadImagem(file, giftId){
+    if (DEMO) return '';
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+    const escala = Math.min(1, 640 / Math.max(img.width, img.height));
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(img.width * escala); cv.height = Math.round(img.height * escala);
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    const blob = await new Promise(res => cv.toBlob(res, 'image/jpeg', .82));
+    const caminho = giftId + '-' + Date.now() + '.jpg';
+    const { error } = await sb.storage.from('gift-images').upload(caminho, blob, { upsert:true, contentType:'image/jpeg' });
+    if (error) { toast('Falha no envio da imagem'); return ''; }
+    return sb.storage.from('gift-images').getPublicUrl(caminho).data.publicUrl;
+  }
+};
+
+/* -------------------------------- navegação -------------------------------- */
+const SECOES = [
+  ['inicio','Início','⌂'], ['convidados','Convidados','👤'], ['fraldas','Fraldas','◻'],
+  ['presentes','Presentes','🎁'], ['entregas','Entregas','✓'], ['mensagens','Mensagens','✉']
+];
+let secao = 'inicio';
+function montarNavs(){
+  document.getElementById('nav-lateral').innerHTML = SECOES.map(([id, nome]) =>
+    '<a href="#' + id + '" data-sec="' + id + '"' + (id === secao ? ' class="ativa"' : '') + '>' + nome + '</a>').join('');
+  document.getElementById('nav-inferior').innerHTML = SECOES.map(([id, nome, ic]) =>
+    '<a href="#' + id + '" data-sec="' + id + '"' + (id === secao ? ' class="ativa"' : '') + '><span>' + ic + '</span>' + nome + '</a>').join('');
+  document.getElementById('topo-titulo').textContent = SECOES.find(s => s[0] === secao)[1];
+}
+window.addEventListener('hashchange', () => {
+  const id = location.hash.replace('#','') || 'inicio';
+  if (SECOES.some(s => s[0] === id)) { secao = id; render(); }
+});
+
+/* --------------------------------- helpers --------------------------------- */
+const reservaAtiva = r => r.status === 'reserved' || r.status === 'received';
+const giftDe = id => DB.gifts.find(g => g.id === id) || { name:id, category:'', icon:'🎁' };
+function statusGift(g){
+  const r = DB.reservas.find(x => x.gift_id === g.id && reservaAtiva(x));
+  if (!g.active) return 'inativo';
+  if (r) return r.status === 'received' ? 'recebido' : 'reservado';
+  return 'disponível';
+}
+function baixarCSV(nome, linhas){
+  const csv = linhas.map(l => l.map(c => '"' + String(c ?? '').replace(/"/g,'""') + '"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type:'text/csv;charset=utf-8' }));
+  a.download = nome; a.click();
+}
+function imprimir(titulo, htmlInterno){
+  const area = document.getElementById('area-print');
+  area.hidden = false;
+  area.innerHTML = '<h1 class="print-titulo">' + esc(titulo) + '</h1>' + htmlInterno;
+  window.print();
+  setTimeout(() => { area.hidden = true; }, 500);
+}
+
+/* ---------------------------------- telas ---------------------------------- */
+const $c = () => document.getElementById('conteudo');
+
+function telaInicio(){
+  const conf = DB.guests.filter(g => g.attendance_status === 'confirmed');
+  const acomp = conf.reduce((s,g) => s + (g.companions || 0), 0);
+  const fr = DB.fraldas.filter(f => f.status !== 'cancelled');
+  const pacotes = fr.reduce((s,f) => s + f.package_quantity, 0);
+  const resAtivas = DB.reservas.filter(reservaAtiva);
+  const recebidos = DB.reservas.filter(r => r.status === 'received').length;
+  const cancel = DB.reservas.filter(r => r.status === 'cancelled').length;
+  const ativos = DB.gifts.filter(g => g.active).length;
+  const disponiveis = ativos - resAtivas.length;
+  const msgs = DB.msgs.filter(m => m.status !== 'hidden');
+  const novas = msgs.filter(m => m.status === 'new').length;
+  const fav = msgs.filter(m => m.favorite).length;
+  const card = (v,l) => '<div class="cardr"><b>' + v + '</b><span>' + l + '</span></div>';
+  $c().innerHTML = '<h2 class="titulo">Resumo do chá 🤍</h2><div class="cards">' +
+    card(conf.length,'Confirmados') + card(acomp,'Acompanhantes') +
+    card(pacotes,'Fraldas registradas') + card(resAtivas.length,'Presentes reservados') +
+    card(recebidos,'Presentes recebidos') + card(Math.max(disponiveis,0),'Presentes disponíveis') +
+    card(cancel,'Reservas canceladas') + card(msgs.length,'Mensagens para o bebê') +
+    card(novas,'Mensagens novas') + card(fav,'Mensagens favoritas') + '</div>' +
+    '<div class="acoes-rapidas">' +
+      '<button class="btn btn--mini" data-ir="presentes" data-acao="novo-presente">+ Adicionar presente</button>' +
+      '<button class="btn btn--mini" data-ir="presentes">Ver reservas</button>' +
+      '<button class="btn btn--mini" data-ir="fraldas">Ver fraldas</button>' +
+      '<button class="btn btn--mini" data-ir="convidados">Ver convidados</button>' +
+      '<button class="btn btn--mini" data-ir="entregas">Marcar entregas</button>' +
+      '<button class="btn btn--mini" data-ir="mensagens">Ver mensagens</button>' +
+      '<button class="btn btn--mini" data-exportar-tudo>Exportar lista</button>' +
+    '</div>';
+}
+
+/* ------ convidados ------ */
+let convBusca = '', convFiltro = 'todos';
+function telaConvidados(){
+  let lista = DB.guests.slice();
+  const q = convBusca.toLowerCase();
+  if (q) lista = lista.filter(g => (g.full_name + g.phone).toLowerCase().includes(q));
+  if (convFiltro === 'confirmados') lista = lista.filter(g => g.attendance_status === 'confirmed');
+  if (convFiltro === 'nao') lista = lista.filter(g => g.attendance_status !== 'confirmed');
+  if (convFiltro === 'miguel') lista = lista.filter(g => g.gender_vote === 'miguel');
+  if (convFiltro === 'zoe') lista = lista.filter(g => g.gender_vote === 'zoe');
+  if (convFiltro === 'com') lista = lista.filter(g => (g.companions || 0) > 0);
+  if (convFiltro === 'sem') lista = lista.filter(g => !g.companions);
+  $c().innerHTML = '<h2 class="titulo">Convidados (' + lista.length + ')</h2>' +
+    '<div class="ferramentas">' +
+      '<input type="search" id="conv-q" placeholder="Buscar nome ou telefone" value="' + esc(convBusca) + '">' +
+      '<select id="conv-f">' + [['todos','Todos'],['confirmados','Confirmados'],['nao','Não confirmados'],['miguel','Palpite Miguel'],['zoe','Palpite Zoe'],['com','Com acompanhantes'],['sem','Sem acompanhantes']].map(([v,n]) => '<option value="' + v + '"' + (convFiltro === v ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>' +
+      '<button class="btn btn--mini" data-csv-convidados>CSV</button>' +
+      '<button class="btn btn--mini" data-pdf-convidados>Imprimir / PDF</button>' +
+    '</div><div class="lista-adm">' +
+    (lista.length ? lista.map(g => {
+      const st = { confirmed:['Confirmado','pill--ok'], pending:['Pendente','pill--warn'], cancelled:['Cancelado','pill--erro'], no_show:['Não veio','pill--off'] }[g.attendance_status] || ['?','pill--off'];
+      return '<div class="item-adm"><div class="item-adm__topo"><strong>' + esc(g.full_name) + '</strong><span class="pill ' + st[1] + '">' + st[0] + '</span></div>' +
+        '<small>' + esc(g.phone) + ' · ' + (g.companions || 0) + ' acompanhante(s) · palpite: ' + (g.gender_vote || '—') + ' · ' + fmtData(g.created_at) + '</small>' +
+        (g.notes ? '<small>Obs.: ' + esc(g.notes) + '</small>' : '') +
+        '<div class="item-adm__acoes">' +
+          '<button class="btn btn--mini" data-editar-conv="' + g.id + '">Editar</button>' +
+          (g.attendance_status !== 'confirmed'
+            ? '<button class="btn btn--mini btn--ok" data-conv-status="' + g.id + '|confirmed">Confirmar</button>'
+            : '<button class="btn btn--mini" data-conv-status="' + g.id + '|cancelled">Cancelar confirmação</button>') +
+          '<button class="btn btn--mini" data-obs-conv="' + g.id + '">Observação</button>' +
+          '<button class="btn btn--mini btn--no" data-excluir-conv="' + g.id + '">Excluir</button>' +
+        '</div></div>';
+    }).join('') : '<p class="vazio">Nenhum convidado neste filtro.</p>') + '</div>';
+}
+
+/* ------ fraldas ------ */
+function telaFraldas(){
+  const ativas = DB.fraldas.filter(f => f.status !== 'cancelled');
+  const porTam = TAMANHOS.map(t => {
+    const doTam = ativas.filter(f => f.size === t);
+    return { t, pessoas: doTam.length,
+      pacotes: doTam.reduce((s,f) => s + f.package_quantity, 0),
+      recebidos: doTam.reduce((s,f) => s + (f.received_quantity || 0), 0),
+      nomes: doTam.map(f => esc(f.guest_name || '—') + ' (' + esc(f.brand) + ', ' + f.package_quantity + ' pct' + (f.status === 'received' ? ' ✓' : '') + ')') };
+  });
+  const maxP = Math.max(1, ...porTam.map(x => x.pacotes));
+  $c().innerHTML = '<h2 class="titulo">Fraldas</h2>' +
+    '<div class="item-adm" style="margin-bottom:14px;"><label style="font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);">Prioridade mostrada aos convidados</label>' +
+    '<div style="display:flex;gap:8px;margin-top:6px;"><input id="prio-txt" placeholder="Ex.: Precisamos mais de tamanho M e L" value="' + esc(DB.prioridade) + '"><button class="btn btn--mini" data-salvar-prio>Salvar</button></div></div>' +
+    '<div class="ferramentas"><button class="btn btn--mini" data-csv-fraldas>CSV</button><button class="btn btn--mini" data-pdf-fraldas>Imprimir / PDF</button></div>' +
+    '<div class="lista-adm">' + porTam.map(x => {
+      const pouca = x.pacotes <= 1;
+      return '<div class="item-adm' + (pouca ? ' fralda-baixa' : '') + '">' +
+        '<div class="item-adm__topo"><strong>Tamanho ' + x.t + '</strong>' + (pouca ? '<span class="pill pill--erro">pouca quantidade</span>' : '') + '</div>' +
+        '<small>' + x.pessoas + ' pessoa(s) · ' + x.pacotes + ' pacote(s) prometido(s) · ' + x.recebidos + ' recebido(s) · ' + Math.max(x.pacotes - x.recebidos, 0) + ' pendente(s)</small>' +
+        '<div class="barra" style="margin:8px 0;"><i style="width:' + Math.round(100 * x.pacotes / maxP) + '%"></i></div>' +
+        (x.nomes.length ? '<small>' + x.nomes.join(' · ') + '</small>' : '<small>Ninguém escolheu ainda.</small>') +
+        '</div>';
+    }).join('') + '</div>';
+}
+
+/* ------ presentes ------ */
+let presFiltro = 'todos', presBusca = '';
+function telaPresentes(){
+  let lista = DB.gifts.slice().sort((a,b) => a.display_order - b.display_order);
+  const q = presBusca.toLowerCase();
+  if (q) lista = lista.filter(g => (g.name + g.category).toLowerCase().includes(q));
+  if (presFiltro !== 'todos') lista = lista.filter(g => statusGift(g) === presFiltro);
+  $c().innerHTML = '<h2 class="titulo">Presentes (' + lista.length + ')</h2>' +
+    '<div class="ferramentas">' +
+      '<input type="search" id="pres-q" placeholder="Buscar presente" value="' + esc(presBusca) + '">' +
+      '<select id="pres-f">' + [['todos','Todos'],['disponível','Disponíveis'],['reservado','Reservados'],['recebido','Recebidos'],['inativo','Inativos']].map(([v,n]) => '<option value="' + v + '"' + (presFiltro === v ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>' +
+      '<button class="btn btn--mini btn--solid" data-novo-presente>+ Novo presente</button>' +
+      '<button class="btn btn--mini" data-csv-presentes>CSV</button>' +
+    '</div><div class="lista-adm">' +
+    lista.map(g => {
+      const r = DB.reservas.find(x => x.gift_id === g.id && reservaAtiva(x));
+      const st = statusGift(g);
+      const pill = { 'disponível':'pill--ok','reservado':'pill--warn','recebido':'pill--ok','inativo':'pill--off' }[st];
+      return '<div class="item-adm"><div class="linha-flex">' +
+        (g.image_url ? '<img class="img-gift" src="' + esc(g.image_url) + '" alt="">' : '<span class="sem-img">' + (g.icon && g.icon.length <= 3 ? g.icon : '🎁') + '</span>') +
+        '<div style="flex:1;"><div class="item-adm__topo"><strong>' + esc(g.name) + '</strong><span class="pill ' + pill + '">' + st + '</span></div>' +
+        '<small>' + esc(g.category) + (g.price_min_yen ? ' · ¥' + g.price_min_yen + '–' + g.price_max_yen : '') + (g.store_name ? ' · ' + esc(g.store_name) : '') + (g.featured ? ' · ★ destaque' : '') + '</small>' +
+        (r ? '<small><strong>' + esc(r.guest_name) + '</strong> · ' + esc(r.guest_phone) + ' · ' + fmtData(r.reserved_at) + (r.message ? ' · “' + esc(r.message) + '”' : '') + (r.received_at ? ' · recebido ' + fmtData(r.received_at) : '') + '</small>' : '') +
+        '</div></div><div class="item-adm__acoes">' +
+        (r && r.status === 'reserved' ? '<button class="btn btn--mini btn--ok" data-res-status="' + r.id + '|received">Marcar recebido</button>' : '') +
+        (r && r.status === 'received' ? '<button class="btn btn--mini" data-res-status="' + r.id + '|reserved">Voltar p/ reservado</button>' : '') +
+        (r ? '<button class="btn btn--mini" data-res-status="' + r.id + '|cancelled">Devolver p/ disponível</button>' : '') +
+        (r ? '<button class="btn btn--mini" data-trocar-conv="' + r.id + '">Trocar convidado</button>' : '') +
+        '<button class="btn btn--mini" data-editar-gift="' + esc(g.id) + '">Editar</button>' +
+        '<button class="btn btn--mini btn--no" data-excluir-gift="' + esc(g.id) + '">Excluir</button>' +
+        '</div></div>';
+    }).join('') + '</div>';
+}
+
+/* ------ entregas ------ */
+function telaEntregas(){
+  const linhas = DB.guests.filter(g => g.attendance_status !== 'cancelled').map(g => {
+    const fr = DB.fraldas.filter(f => (f.guest_id && f.guest_id === g.id) || f.guest_phone === g.phone).filter(f => f.status !== 'cancelled');
+    const rs = DB.reservas.filter(r => ((r.guest_id && r.guest_id === g.id) || r.guest_phone === g.phone) && reservaAtiva(r));
+    return { g, fr, rs };
+  }).filter(x => x.fr.length || x.rs.length || x.g.attendance_status === 'confirmed');
+  $c().innerHTML = '<h2 class="titulo">Entregas — dia da festa</h2>' +
+    '<div class="ferramentas"><button class="btn btn--mini" data-csv-entregas>CSV</button><button class="btn btn--mini" data-pdf-entregas>Imprimir / PDF</button></div>' +
+    '<div class="lista-adm">' + (linhas.length ? linhas.map(({ g, fr, rs }) => {
+      const fralOk = fr.length && fr.every(f => f.status === 'received');
+      const presOk = rs.length && rs.every(r => r.status === 'received');
+      return '<div class="item-adm"><div class="item-adm__topo"><strong>' + esc(g.full_name) + '</strong>' +
+        (g.arrived_at ? '<span class="pill pill--ok">chegou ' + fmtData(g.arrived_at) + '</span>' : (g.attendance_status === 'no_show' ? '<span class="pill pill--erro">não compareceu</span>' : '')) + '</div>' +
+        '<small>Fralda: ' + (fr.length ? fr.map(f => f.size + ' ×' + f.package_quantity + (f.status === 'received' ? ' ✓' : '')).join(', ') : '—') +
+        ' · Presente: ' + (rs.length ? rs.map(r => esc(giftDe(r.gift_id).name) + (r.status === 'received' ? ' ✓' : '')).join(', ') : '—') + '</small>' +
+        (g.notes ? '<small>Obs.: ' + esc(g.notes) + '</small>' : '') +
+        '<div class="item-adm__acoes">' +
+        (fr.length && !fralOk ? '<button class="btn btn--mini btn--ok" data-ent-fralda="' + g.id + '">Fralda recebida</button>' : '') +
+        (rs.length && !presOk ? '<button class="btn btn--mini btn--ok" data-ent-presente="' + g.id + '">Presente recebido</button>' : '') +
+        ((fr.length || rs.length) && !(fralOk && presOk) ? '<button class="btn btn--mini btn--solid" data-ent-tudo="' + g.id + '">Tudo recebido</button>' : '') +
+        (g.attendance_status !== 'no_show' ? '<button class="btn btn--mini btn--no" data-ent-faltou="' + g.id + '">Não compareceu</button>' : '') +
+        '<button class="btn btn--mini" data-obs-conv="' + g.id + '">Observação</button>' +
+        '</div></div>';
+    }).join('') : '<p class="vazio">Sem registros ainda.</p>') + '</div>';
+}
+
+/* ------ mensagens ------ */
+let msgFiltro = 'todas', msgBusca = '', msgOrdem = 'data';
+function telaMensagens(){
+  let lista = DB.msgs.filter(m => m.status !== 'hidden');
+  if (msgFiltro !== 'todas') lista = lista.filter(m => m.recipient_type === msgFiltro);
+  const q = msgBusca.toLowerCase();
+  if (q) lista = lista.filter(m => (m.guest_name || '').toLowerCase().includes(q));
+  if (msgOrdem === 'data') lista.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  if (msgOrdem === 'nome') lista.sort((a,b) => (a.guest_name || '').localeCompare(b.guest_name || ''));
+  if (msgOrdem === 'fav') lista.sort((a,b) => (b.favorite - a.favorite) || (new Date(b.created_at) - new Date(a.created_at)));
+  const dest = t => t === 'miguel' ? 'Para Miguel 💙' : t === 'zoe' ? 'Para Zoe 🩷' : 'Para o bebê 💛';
+  $c().innerHTML = '<h2 class="titulo">Mensagens para o bebê (' + lista.length + ')</h2>' +
+    '<div class="ferramentas">' +
+      '<input type="search" id="msg-q" placeholder="Buscar convidado" value="' + esc(msgBusca) + '">' +
+      '<select id="msg-f">' + [['todas','Todas'],['miguel','Para Miguel'],['zoe','Para Zoe'],['baby','Para o bebê']].map(([v,n]) => '<option value="' + v + '"' + (msgFiltro === v ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>' +
+      '<select id="msg-o">' + [['data','Mais recentes'],['nome','Por convidado'],['fav','Favoritas primeiro']].map(([v,n]) => '<option value="' + v + '"' + (msgOrdem === v ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>' +
+      '<button class="btn btn--mini" data-csv-msgs>CSV</button>' +
+      '<button class="btn btn--mini" data-pdf-msgs>Versão para impressão / PDF</button>' +
+    '</div><div class="lista-adm">' +
+    (lista.length ? lista.map(m => {
+      const conv = DB.guests.find(g => (m.guest_id && g.id === m.guest_id) || g.phone === m.guest_phone);
+      const fral = DB.fraldas.filter(f => f.guest_phone === m.guest_phone && f.status !== 'cancelled').map(f => f.size).join(', ');
+      const pres = DB.reservas.filter(r => r.guest_phone === m.guest_phone && reservaAtiva(r)).map(r => giftDe(r.gift_id).name).join(', ');
+      return '<div class="msg-card' + (m.status === 'new' ? ' nova' : '') + '">' +
+        '<div class="item-adm__topo"><strong>' + esc(m.guest_name || 'Convidado') + '</strong><span class="pill pill--warn">' + dest(m.recipient_type) + '</span></div>' +
+        '<p class="texto">&ldquo;' + esc(m.message) + '&rdquo;</p>' +
+        '<small>' + fmtData(m.created_at) + ' · tel (privado): ' + esc(m.guest_phone || '—') +
+        (pres ? ' · presente: ' + esc(pres) : '') + (fral ? ' · fralda: ' + esc(fral) : '') +
+        ' · ' + (m.status === 'new' ? 'nova' : 'lida') + (m.favorite ? ' · ★ favorita' : '') + '</small>' +
+        '<div class="item-adm__acoes">' +
+          (m.status === 'new' ? '<button class="btn btn--mini" data-msg-lida="' + m.id + '">Marcar como lida</button>' : '') +
+          '<button class="btn btn--mini" data-msg-fav="' + m.id + '">' + (m.favorite ? 'Tirar favorita' : '★ Favoritar') + '</button>' +
+          '<button class="btn btn--mini" data-msg-editar="' + m.id + '">Corrigir texto</button>' +
+          '<button class="btn btn--mini btn--no" data-msg-ocultar="' + m.id + '">Ocultar</button>' +
+        '</div></div>';
+    }).join('') : '<p class="vazio">Nenhuma mensagem ainda.</p>') + '</div>';
+}
+
+/* ------ editor de presente ------ */
+function abrirEditorPresente(g){
+  const novo = !g;
+  g = g || { id:'novo-' + Date.now().toString(36), name:'', category:'Outros', description:'', image_url:'', icon:'🎁',
+    price_min_yen:'', price_max_yen:'', store_name:'', product_reference_url:'', color:'', display_order:(DB.gifts.length + 1) * 10, featured:false, active:true };
+  const dlg = document.createElement('dialog');
+  dlg.innerHTML = '<h2 class="titulo">' + (novo ? 'Novo presente' : 'Editar presente') + '</h2>' +
+    '<div class="grade-form">' +
+    '<div style="grid-column:1/-1;"><label>Nome</label><input id="e-nome" value="' + esc(g.name) + '"></div>' +
+    '<div><label>Categoria</label><select id="e-cat">' + CATEGORIAS.map(c => '<option' + (c === g.category ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></div>' +
+    '<div><label>Cor</label><input id="e-cor" placeholder="bege, sálvia, cru..." value="' + esc(g.color || '') + '"></div>' +
+    '<div style="grid-column:1/-1;"><label>Descrição</label><input id="e-desc" value="' + esc(g.description || '') + '"></div>' +
+    '<div><label>Preço mín. (¥)</label><input id="e-pmin" type="number" value="' + (g.price_min_yen ?? '') + '"></div>' +
+    '<div><label>Preço máx. (¥)</label><input id="e-pmax" type="number" value="' + (g.price_max_yen ?? '') + '"></div>' +
+    '<div><label>Loja sugerida</label><input id="e-loja" placeholder="Akachan Honpo, Nishimatsuya..." value="' + esc(g.store_name || '') + '"></div>' +
+    '<div><label>Link de referência</label><input id="e-link" value="' + esc(g.product_reference_url || '') + '"></div>' +
+    '<div><label>Ordem</label><input id="e-ordem" type="number" value="' + g.display_order + '"></div>' +
+    '<div style="display:flex;gap:14px;align-items:end;padding-bottom:8px;"><label style="margin:0;"><input type="checkbox" id="e-dest" style="width:auto;"' + (g.featured ? ' checked' : '') + '> Destaque</label>' +
+    '<label style="margin:0;"><input type="checkbox" id="e-ativo" style="width:auto;"' + (g.active ? ' checked' : '') + '> Ativo</label></div>' +
+    '<div style="grid-column:1/-1;"><label>Imagem</label><div class="linha-flex">' +
+      '<img id="e-prev" class="img-gift" src="' + esc(g.image_url || '') + '" style="' + (g.image_url ? '' : 'display:none;') + '">' +
+      '<input type="file" id="e-img" accept="image/*" style="border:none;padding:0;">' +
+      (g.image_url ? '<button class="btn btn--mini btn--no" id="e-img-rm" type="button">Remover</button>' : '') +
+    '</div></div></div>' +
+    '<div class="item-adm__acoes" style="margin-top:18px;"><button class="btn btn--solid btn--mini" id="e-salvar">Salvar</button>' +
+    '<button class="btn btn--mini" id="e-fechar">Cancelar</button></div>';
+  document.body.appendChild(dlg);
+  dlg.showModal();
+  let novaImg = null, removerImg = false;
+  dlg.querySelector('#e-img').addEventListener('change', (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    novaImg = f; removerImg = false;
+    const prev = dlg.querySelector('#e-prev');
+    prev.src = URL.createObjectURL(f); prev.style.display = '';
+  });
+  const rm = dlg.querySelector('#e-img-rm');
+  if (rm) rm.addEventListener('click', () => { removerImg = true; novaImg = null; dlg.querySelector('#e-prev').style.display = 'none'; });
+  dlg.querySelector('#e-fechar').addEventListener('click', () => dlg.remove());
+  dlg.querySelector('#e-salvar').addEventListener('click', async () => {
+    const obj = {
+      id: g.id, name: dlg.querySelector('#e-nome').value.trim(),
+      category: dlg.querySelector('#e-cat').value, color: dlg.querySelector('#e-cor').value.trim(),
+      description: dlg.querySelector('#e-desc').value.trim(),
+      price_min_yen: Number(dlg.querySelector('#e-pmin').value) || null,
+      price_max_yen: Number(dlg.querySelector('#e-pmax').value) || null,
+      store_name: dlg.querySelector('#e-loja').value.trim(),
+      product_reference_url: dlg.querySelector('#e-link').value.trim(),
+      display_order: Number(dlg.querySelector('#e-ordem').value) || 0,
+      featured: dlg.querySelector('#e-dest').checked, active: dlg.querySelector('#e-ativo').checked,
+      icon: g.icon || '🎁', image_url: removerImg ? '' : (g.image_url || ''), updated_at: new Date().toISOString()
+    };
+    if (!obj.name) { toast('Dê um nome ao presente'); return; }
+    if (novaImg) obj.image_url = await API.uploadImagem(novaImg, obj.id) || obj.image_url;
+    if (DEMO) { if (novo) DB.gifts.push(obj); else Object.assign(DB.gifts.find(x => x.id === g.id), obj); }
+    const { error } = await API.up('gifts', obj);
+    if (error) { toast('Erro ao salvar'); return; }
+    dlg.remove(); await recarregar(); toast('Presente salvo');
+  });
+}
+
+/* ---------------------------------- render --------------------------------- */
+function render(){
+  montarNavs();
+  ({ inicio:telaInicio, convidados:telaConvidados, fraldas:telaFraldas,
+     presentes:telaPresentes, entregas:telaEntregas, mensagens:telaMensagens }[secao] || telaInicio)();
+}
+async function recarregar(){ await API.carregar(); render(); }
+
+/* --------------------------------- eventos --------------------------------- */
+document.addEventListener('click', async (e) => {
+  const ir = e.target.closest('[data-ir]');
+  if (ir) { location.hash = ir.dataset.ir; if (ir.dataset.acao === 'novo-presente') setTimeout(() => abrirEditorPresente(null), 100); return; }
+  if (e.target.closest('[data-novo-presente]')) { abrirEditorPresente(null); return; }
+  const eg = e.target.closest('[data-editar-gift]');
+  if (eg) { abrirEditorPresente(DB.gifts.find(g => g.id === eg.dataset.editarGift)); return; }
+  const xg = e.target.closest('[data-excluir-gift]');
+  if (xg) {
+    if (!xg.dataset.conf) { xg.dataset.conf = '1'; xg.textContent = 'Excluir mesmo?'; return; }
+    if (DEMO) DB.gifts = DB.gifts.filter(g => g.id !== xg.dataset.excluirGift);
+    await API.del('gifts', xg.dataset.excluirGift); await recarregar(); toast('Presente excluído'); return;
+  }
+  const rs = e.target.closest('[data-res-status]');
+  if (rs) {
+    const [id, st] = rs.dataset.resStatus.split('|');
+    const r = DB.reservas.find(x => x.id === id);
+    const obj = { ...r, status: st,
+      received_at: st === 'received' ? new Date().toISOString() : null,
+      cancelled_at: st === 'cancelled' ? new Date().toISOString() : null };
+    if (DEMO) Object.assign(r, obj);
+    await API.up('gift_reservations', obj); await recarregar(); toast('Reserva atualizada'); return;
+  }
+  const tc = e.target.closest('[data-trocar-conv]');
+  if (tc) {
+    const r = DB.reservas.find(x => x.id === tc.dataset.trocarConv);
+    const alvo = tc.closest('.item-adm');
+    alvo.insertAdjacentHTML('beforeend', '<div class="grade-form" data-troca><div><label>Novo nome</label><input id="t-nome" value="' + esc(r.guest_name) + '"></div><div><label>Novo telefone</label><input id="t-tel" value="' + esc(r.guest_phone) + '"></div><div class="item-adm__acoes"><button class="btn btn--mini btn--solid" data-troca-ok="' + r.id + '">Salvar troca</button></div></div>');
+    tc.disabled = true; return;
+  }
+  const tok = e.target.closest('[data-troca-ok]');
+  if (tok) {
+    const r = DB.reservas.find(x => x.id === tok.dataset.trocaOk);
+    const obj = { ...r, guest_name: document.getElementById('t-nome').value.trim(), guest_phone: document.getElementById('t-tel').value.trim(), guest_id: null };
+    if (DEMO) Object.assign(r, obj);
+    await API.up('gift_reservations', obj); await recarregar(); toast('Convidado trocado'); return;
+  }
+  const ec = e.target.closest('[data-editar-conv]');
+  if (ec) {
+    const g = DB.guests.find(x => x.id === ec.dataset.editarConv);
+    const alvo = ec.closest('.item-adm');
+    if (alvo.querySelector('[data-edconv]')) return;
+    alvo.insertAdjacentHTML('beforeend', '<div class="grade-form" data-edconv>' +
+      '<div><label>Nome</label><input id="c-nome" value="' + esc(g.full_name) + '"></div>' +
+      '<div><label>Telefone</label><input id="c-tel" value="' + esc(g.phone) + '"></div>' +
+      '<div><label>Acompanhantes</label><input id="c-comp" type="number" min="0" value="' + (g.companions || 0) + '"></div>' +
+      '<div><label>Palpite</label><select id="c-voto"><option value="">—</option><option value="miguel"' + (g.gender_vote === 'miguel' ? ' selected' : '') + '>Miguel</option><option value="zoe"' + (g.gender_vote === 'zoe' ? ' selected' : '') + '>Zoe</option></select></div>' +
+      '<div class="item-adm__acoes"><button class="btn btn--mini btn--solid" data-edconv-ok="' + g.id + '">Salvar</button></div></div>');
+    return;
+  }
+  const eok = e.target.closest('[data-edconv-ok]');
+  if (eok) {
+    const g = DB.guests.find(x => x.id === eok.dataset.edconvOk);
+    const obj = { ...g, full_name: document.getElementById('c-nome').value.trim(), phone: document.getElementById('c-tel').value.trim(),
+      companions: Number(document.getElementById('c-comp').value) || 0,
+      gender_vote: document.getElementById('c-voto').value || null, updated_at: new Date().toISOString() };
+    if (DEMO) Object.assign(g, obj);
+    await API.up('guests', obj); await recarregar(); toast('Convidado salvo'); return;
+  }
+  const cs = e.target.closest('[data-conv-status]');
+  if (cs) {
+    const [id, st] = cs.dataset.convStatus.split('|');
+    const g = DB.guests.find(x => x.id === id);
+    const obj = { ...g, attendance_status: st, updated_at: new Date().toISOString() };
+    if (DEMO) Object.assign(g, obj);
+    await API.up('guests', obj); await recarregar(); return;
+  }
+  const oc = e.target.closest('[data-obs-conv]');
+  if (oc) {
+    const g = DB.guests.find(x => x.id === oc.dataset.obsConv);
+    const alvo = oc.closest('.item-adm');
+    if (alvo.querySelector('[data-obsbox]')) return;
+    alvo.insertAdjacentHTML('beforeend', '<div data-obsbox style="margin-top:8px;"><textarea id="o-txt" placeholder="Observação interna">' + esc(g.notes || '') + '</textarea><div class="item-adm__acoes"><button class="btn btn--mini btn--solid" data-obs-ok="' + g.id + '">Salvar observação</button></div></div>');
+    return;
+  }
+  const ook = e.target.closest('[data-obs-ok]');
+  if (ook) {
+    const g = DB.guests.find(x => x.id === ook.dataset.obsOk);
+    const obj = { ...g, notes: document.getElementById('o-txt').value.trim(), updated_at: new Date().toISOString() };
+    if (DEMO) Object.assign(g, obj);
+    await API.up('guests', obj); await recarregar(); toast('Observação salva'); return;
+  }
+  const xc = e.target.closest('[data-excluir-conv]');
+  if (xc) {
+    if (!xc.dataset.conf) { xc.dataset.conf = '1'; xc.textContent = 'Excluir mesmo?'; return; }
+    if (DEMO) DB.guests = DB.guests.filter(g => g.id !== xc.dataset.excluirConv);
+    await API.del('guests', xc.dataset.excluirConv); await recarregar(); toast('Registro excluído'); return;
+  }
+  if (e.target.closest('[data-salvar-prio]')) {
+    await API.prioridade(document.getElementById('prio-txt').value.trim());
+    await recarregar(); toast('Prioridade salva'); return;
+  }
+  // entregas
+  const marcaEntrega = async (gid, fralda, presente, faltou) => {
+    const g = DB.guests.find(x => x.id === gid);
+    if (faltou) {
+      const obj = { ...g, attendance_status:'no_show', updated_at:new Date().toISOString() };
+      if (DEMO) Object.assign(g, obj);
+      await API.up('guests', obj);
+    } else if (!g.arrived_at) {
+      const obj = { ...g, arrived_at:new Date().toISOString(), updated_at:new Date().toISOString() };
+      if (DEMO) Object.assign(g, obj);
+      await API.up('guests', obj);
+    }
+    if (fralda) for (const f of DB.fraldas.filter(f => ((f.guest_id && f.guest_id === g.id) || f.guest_phone === g.phone) && f.status === 'promised')) {
+      const obj = { ...f, status:'received', received_quantity:f.package_quantity, updated_at:new Date().toISOString() };
+      if (DEMO) Object.assign(f, obj);
+      await API.up('diaper_choices', obj);
+    }
+    if (presente) for (const r of DB.reservas.filter(r => ((r.guest_id && r.guest_id === g.id) || r.guest_phone === g.phone) && r.status === 'reserved')) {
+      const obj = { ...r, status:'received', received_at:new Date().toISOString() };
+      if (DEMO) Object.assign(r, obj);
+      await API.up('gift_reservations', obj);
+    }
+    await recarregar();
+  };
+  const ef2 = e.target.closest('[data-ent-fralda]');
+  if (ef2) { await marcaEntrega(ef2.dataset.entFralda, true, false, false); toast('Fralda recebida ✓'); return; }
+  const ep = e.target.closest('[data-ent-presente]');
+  if (ep) { await marcaEntrega(ep.dataset.entPresente, false, true, false); toast('Presente recebido ✓'); return; }
+  const et = e.target.closest('[data-ent-tudo]');
+  if (et) { await marcaEntrega(et.dataset.entTudo, true, true, false); toast('Tudo recebido ✓'); return; }
+  const en = e.target.closest('[data-ent-faltou]');
+  if (en) { await marcaEntrega(en.dataset.entFaltou, false, false, true); toast('Marcado como não compareceu'); return; }
+  // mensagens
+  const ml = e.target.closest('[data-msg-lida]');
+  if (ml) {
+    const m = DB.msgs.find(x => x.id === ml.dataset.msgLida);
+    const obj = { ...m, status:'read', read_at:new Date().toISOString() };
+    if (DEMO) Object.assign(m, obj);
+    await API.up('baby_messages', obj); await recarregar(); return;
+  }
+  const mf = e.target.closest('[data-msg-fav]');
+  if (mf) {
+    const m = DB.msgs.find(x => x.id === mf.dataset.msgFav);
+    const obj = { ...m, favorite: !m.favorite };
+    if (DEMO) Object.assign(m, obj);
+    await API.up('baby_messages', obj); await recarregar(); return;
+  }
+  const mo = e.target.closest('[data-msg-ocultar]');
+  if (mo) {
+    if (!mo.dataset.conf) { mo.dataset.conf = '1'; mo.textContent = 'Ocultar mesmo?'; return; }
+    const m = DB.msgs.find(x => x.id === mo.dataset.msgOcultar);
+    const obj = { ...m, status:'hidden' };
+    if (DEMO) Object.assign(m, obj);
+    await API.up('baby_messages', obj); await recarregar(); return;
+  }
+  const me2 = e.target.closest('[data-msg-editar]');
+  if (me2) {
+    const m = DB.msgs.find(x => x.id === me2.dataset.msgEditar);
+    const alvo = me2.closest('.msg-card');
+    if (alvo.querySelector('[data-medit]')) return;
+    alvo.insertAdjacentHTML('beforeend', '<div data-medit style="margin-top:8px;"><textarea id="me-txt" maxlength="600">' + esc(m.message) + '</textarea><div class="item-adm__acoes"><button class="btn btn--mini btn--solid" data-medit-ok="' + m.id + '">Salvar correção</button></div></div>');
+    return;
+  }
+  const mok = e.target.closest('[data-medit-ok]');
+  if (mok) {
+    const m = DB.msgs.find(x => x.id === mok.dataset.meditOk);
+    const obj = { ...m, message: document.getElementById('me-txt').value.trim(), updated_at: new Date().toISOString() };
+    if (DEMO) Object.assign(m, obj);
+    await API.up('baby_messages', obj); await recarregar(); toast('Mensagem corrigida'); return;
+  }
+  // exportações
+  if (e.target.closest('[data-csv-convidados]')) {
+    baixarCSV('convidados.csv', [['Nome','Telefone','Status','Acompanhantes','Palpite','Confirmado em','Observações'],
+      ...DB.guests.map(g => [g.full_name, g.phone, g.attendance_status, g.companions, g.gender_vote || '', fmtData(g.created_at), g.notes || ''])]); return;
+  }
+  if (e.target.closest('[data-csv-fraldas]')) {
+    baixarCSV('fraldas.csv', [['Convidado','Telefone','Tamanho','Marca','Pacotes','Status','Recebidos'],
+      ...DB.fraldas.map(f => [f.guest_name, f.guest_phone, f.size, f.brand, f.package_quantity, f.status, f.received_quantity])]); return;
+  }
+  if (e.target.closest('[data-csv-presentes]')) {
+    baixarCSV('presentes.csv', [['Presente','Categoria','Preço (¥)','Status','Convidado','Telefone','Reservado em','Recebido em','Mensagem'],
+      ...DB.gifts.map(g => { const r = DB.reservas.find(x => x.gift_id === g.id && reservaAtiva(x));
+        return [g.name, g.category, (g.price_min_yen || '') + '-' + (g.price_max_yen || ''), statusGift(g), r ? r.guest_name : '', r ? r.guest_phone : '', r ? fmtData(r.reserved_at) : '', r && r.received_at ? fmtData(r.received_at) : '', r ? (r.message || '') : '']; })]); return;
+  }
+  if (e.target.closest('[data-csv-entregas]')) {
+    baixarCSV('entregas.csv', [['Convidado','Telefone','Status','Chegada','Fraldas','Presentes','Observações'],
+      ...DB.guests.map(g => [g.full_name, g.phone, g.attendance_status, g.arrived_at ? fmtData(g.arrived_at) : '',
+        DB.fraldas.filter(f => f.guest_phone === g.phone).map(f => f.size + ' x' + f.package_quantity + ' (' + f.status + ')').join(' | '),
+        DB.reservas.filter(r => r.guest_phone === g.phone && reservaAtiva(r)).map(r => giftDe(r.gift_id).name + ' (' + r.status + ')').join(' | '), g.notes || ''])]); return;
+  }
+  if (e.target.closest('[data-csv-msgs]')) {
+    baixarCSV('mensagens-para-o-bebe.csv', [['Convidado','Telefone','Destinatário','Mensagem','Data','Favorita','Status'],
+      ...DB.msgs.filter(m => m.status !== 'hidden').map(m => [m.guest_name, m.guest_phone, m.recipient_type, m.message, fmtData(m.created_at), m.favorite ? 'sim' : '', m.status])]); return;
+  }
+  if (e.target.closest('[data-pdf-msgs]')) {
+    imprimir('Mensagens para Miguel ou Zoe 💛', DB.msgs.filter(m => m.status !== 'hidden').map(m =>
+      '<div class="print-msg"><h3>' + esc(m.guest_name || 'Convidado') + ' — ' + (m.recipient_type === 'miguel' ? 'para Miguel' : m.recipient_type === 'zoe' ? 'para Zoe' : 'para o bebê') + (m.favorite ? ' ★' : '') + '</h3><p>&ldquo;' + esc(m.message) + '&rdquo;</p></div>').join('')); return;
+  }
+  if (e.target.closest('[data-pdf-convidados]')) {
+    imprimir('Convidados', '<div class="print-msg">' + DB.guests.map(g => '<p>' + esc(g.full_name) + ' · ' + esc(g.phone) + ' · ' + g.attendance_status + ' · ' + (g.companions || 0) + ' acomp.</p>').join('') + '</div>'); return;
+  }
+  if (e.target.closest('[data-pdf-fraldas]')) {
+    imprimir('Fraldas', '<div class="print-msg">' + DB.fraldas.map(f => '<p>' + esc(f.guest_name || '') + ' · ' + f.size + ' · ' + esc(f.brand) + ' · ' + f.package_quantity + ' pct · ' + f.status + '</p>').join('') + '</div>'); return;
+  }
+  if (e.target.closest('[data-pdf-entregas]')) {
+    imprimir('Entregas', '<div class="print-msg">' + DB.guests.map(g => '<p>' + esc(g.full_name) + ' — fraldas: ' + (DB.fraldas.filter(f => f.guest_phone === g.phone).map(f => f.size + '×' + f.package_quantity).join(', ') || '—') + ' — presentes: ' + (DB.reservas.filter(r => r.guest_phone === g.phone && reservaAtiva(r)).map(r => giftDe(r.gift_id).name).join(', ') || '—') + '</p>').join('') + '</div>'); return;
+  }
+  if (e.target.closest('[data-exportar-tudo]')) {
+    baixarCSV('resumo-cha.csv', [['Seção','Total'],
+      ['Confirmados', DB.guests.filter(g => g.attendance_status === 'confirmed').length],
+      ['Fraldas (pacotes)', DB.fraldas.reduce((s,f) => s + f.package_quantity, 0)],
+      ['Presentes reservados', DB.reservas.filter(reservaAtiva).length],
+      ['Mensagens', DB.msgs.length]]); return;
+  }
+});
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'conv-q') { convBusca = e.target.value; telaConvidados(); document.getElementById('conv-q').focus(); const i = document.getElementById('conv-q'); i.setSelectionRange(i.value.length, i.value.length); }
+  if (e.target.id === 'pres-q') { presBusca = e.target.value; telaPresentes(); const i = document.getElementById('pres-q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+  if (e.target.id === 'msg-q') { msgBusca = e.target.value; telaMensagens(); const i = document.getElementById('msg-q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+});
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'conv-f') { convFiltro = e.target.value; telaConvidados(); }
+  if (e.target.id === 'pres-f') { presFiltro = e.target.value; telaPresentes(); }
+  if (e.target.id === 'msg-f') { msgFiltro = e.target.value; telaMensagens(); }
+  if (e.target.id === 'msg-o') { msgOrdem = e.target.value; telaMensagens(); }
+});
+
+/* ------------------------------ autenticação ------------------------------ */
+async function entrarNoPainel(){
+  document.getElementById('tela-login').hidden = true;
+  document.getElementById('app').classList.add('ativa');
+  await API.carregar();
+  secao = (location.hash.replace('#','') || 'inicio');
+  if (!SECOES.some(s => s[0] === secao)) secao = 'inicio';
+  render();
+  if (!DEMO && sb) {
+    sb.channel('painel')
+      .on('postgres_changes', { event:'*', schema:'public' }, () => { recarregar(); })
+      .subscribe();
+  }
+}
+async function iniciar(){
+  if (DEMO) {
+    document.getElementById('faixa-demo').hidden = false;
+    seedDemo();
+    await entrarNoPainel();
+    return;
+  }
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    document.getElementById('tela-config').hidden = false;
+    return;
+  }
+  const m = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+  sb = m.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const { data:{ session } } = await sb.auth.getSession();
+  if (session) { await entrarNoPainel(); }
+  else { document.getElementById('tela-login').hidden = false; }
+  sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') location.reload(); });
+}
+document.getElementById('form-login').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const erro = document.getElementById('login-erro');
+  erro.style.display = 'none';
+  const { error } = await sb.auth.signInWithPassword({
+    email: document.getElementById('l-email').value.trim(),
+    password: document.getElementById('l-senha').value
+  });
+  if (error) { erro.style.display = 'block'; return; }
+  // valida se é admin: tenta ler uma tabela protegida
+  const { error: e2 } = await sb.from('guests').select('id').limit(1);
+  if (e2) { erro.style.display = 'block'; await sb.auth.signOut(); return; }
+  await entrarNoPainel();
+});
+const sair = async () => { if (DEMO) { location.href = 'admin.html'; return; } await sb.auth.signOut(); };
+document.getElementById('btn-sair').addEventListener('click', sair);
+document.getElementById('btn-sair-m').addEventListener('click', sair);
+
+iniciar();
+</script>
+</body>
+</html>

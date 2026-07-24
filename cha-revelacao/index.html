@@ -625,6 +625,25 @@
   .resumo-presente strong{font-family:var(--font-serif);font-weight:600;font-size:1.1rem;display:block;}
   .resumo-presente small{color:var(--ink-soft);font-size:.8rem;}
 
+  .msg-bebe{
+    margin:26px 0 6px;
+    border:1px dashed var(--hairline);
+    padding:20px 18px 8px;
+    text-align:left;
+  }
+  .msg-bebe__titulo{
+    font-family:var(--font-serif);
+    font-weight:600;font-size:1.2rem;
+    margin-bottom:8px;
+  }
+  .msg-bebe__apoio{
+    font-size:.82rem;color:var(--ink-soft);
+    margin-bottom:14px;line-height:1.6;
+  }
+  .msg-bebe__cont{
+    text-align:right;font-size:.72rem;color:var(--ink-soft);
+    margin-top:4px;
+  }
   .obrigado{max-width:420px;margin:40px auto;text-align:center;}
   .obrigado__selo{
     width:74px;height:74px;
@@ -899,7 +918,16 @@
       <span class="kicker reveal" style="margin-top:44px;">Sua presença é o maior presente</span>
       <h2 class="section-title reveal">Confirme sua presença</h2>
       <p class="lead reveal">Para organizarmos tudo com carinho, confirme até uma semana antes da festa — é rapidinho, direto pelo WhatsApp.</p>
-      <a class="btn btn--solid reveal" target="_blank" rel="noopener noreferrer"
+      <div id="form-rsvp-wrap" hidden style="max-width:440px;margin:0 auto 30px;text-align:left;">
+        <form id="form-rsvp" novalidate>
+          <div class="form-campo" id="campo-rnome"><label for="r-nome">Seu nome *</label><input id="r-nome" type="text" autocomplete="name"><p class="form-erro">Diga quem você é.</p></div>
+          <div class="form-campo" id="campo-rtel"><label for="r-tel">Telefone *</label><input id="r-tel" type="tel" inputmode="tel" placeholder="090-0000-0000"><p class="form-erro">Precisamos do seu telefone.</p></div>
+          <div class="form-campo"><label for="r-comp">Acompanhantes</label><input id="r-comp" type="number" inputmode="numeric" min="0" max="10" value="0"></div>
+          <div class="fluxo__acao" style="margin-top:6px;"><button class="btn btn--solid" type="submit" style="width:100%;">Confirmar presença</button></div>
+          <p id="rsvp-ok" hidden style="text-align:center;color:var(--gold);margin-top:14px;"></p>
+        </form>
+      </div>
+      <a class="btn reveal" id="btn-whats" target="_blank" rel="noopener noreferrer"
          href="https://wa.me/818058298903?text=Ol%C3%A1!%20Quero%20confirmar%20minha%20presen%C3%A7a%20no%20ch%C3%A1%20de%20beb%C3%AA%20%2B%20revela%C3%A7%C3%A3o%20do%20dia%2029%2F08!">
         Confirmar pelo WhatsApp
       </a>
@@ -990,6 +1018,40 @@
     const salvo = localStorage.getItem('palpite-bebe');
     if (salvo && frases[salvo]) escolher(salvo, false);
   } catch(e) {}
+
+  // ===== Integração Supabase (opcional — cole as credenciais do seu projeto) =====
+  const SUPABASE_URL = '';        // ex.: https://xxxx.supabase.co
+  const SUPABASE_ANON_KEY = '';   // anon key (pública; os dados são protegidos por RLS)
+  let sb = null;
+  let statusPresentes = {};       // gift_id -> 'reserved' | 'received'
+  let prioridadeFraldas = '';
+  const usaSupabase = () => !!sb;
+  async function carregarStatusPresentes(){
+    if (!sb) return;
+    try {
+      const { data } = await sb.from('public_gift_status').select('gift_id,status');
+      statusPresentes = {};
+      (data || []).forEach(r => { statusPresentes[r.gift_id] = r.status; });
+    } catch(e) {}
+  }
+  async function iniciarSupabase(){
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
+    try {
+      const m = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+      sb = m.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      await carregarStatusPresentes();
+      try {
+        const { data } = await sb.from('settings').select('value').eq('key','diaper_priority').maybeSingle();
+        prioridadeFraldas = (data && data.value) || '';
+      } catch(e) {}
+      const rsvp = document.getElementById('form-rsvp-wrap');
+      if (rsvp) rsvp.hidden = false;
+      if (location.hash.startsWith('#presentes')) rota();
+    } catch(e) { sb = null; }
+  }
+  window.addEventListener('focus', () => {
+    if (sb && location.hash.startsWith('#presentes')) carregarStatusPresentes().then(rota);
+  });
 
   // ===== Lista de Presentes =====
   const CATS = [
@@ -1171,17 +1233,17 @@
     return h + '</div>';
   }
   function htmlMimo(p, tomados){
-    const tomado = tomados.has(p.id);
+    const tomado = usaSupabase() ? !!statusPresentes[p.id] : tomados.has(p.id);
     const especial = p.id === 'fr-fraldas';
     return '<div class="mimo' + (tomado ? ' mimo--escolhido' : '') + '">' +
       '<span class="mimo__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#' + p.icone + '"/></svg></span>' +
       '<span class="mimo__nome">' + esc(p.nome) + '</span>' +
       '<button class="mimo__btn" type="button" data-escolher="' + p.id + '"' + (tomado ? ' disabled' : '') + '>' +
-        (tomado ? 'Escolhido' : (especial ? 'Montar' : 'Escolher')) + '</button>' +
+        (tomado ? 'Já escolhido' : (especial ? 'Montar' : 'Escolher')) + '</button>' +
       '<span class="mimo__desc">' + esc(p.desc) + '</span>' +
       '<span class="mimo__meta">' +
         (p.preco ? '<span class="mimo__preco">' + p.preco + '</span>' : '') +
-        '<span class="mimo__status ' + (tomado ? 'mimo__status--escolhido' : 'mimo__status--livre') + '">' + (tomado ? 'Escolhido' : 'Disponível') + '</span>' +
+        '<span class="mimo__status ' + (tomado ? 'mimo__status--escolhido' : 'mimo__status--livre') + '">' + (tomado ? 'Já escolhido' : 'Disponível') + '</span>' +
       '</span></div>';
   }
 
@@ -1229,6 +1291,9 @@
 
   function telaFraldas(){
     let h = '<h3 class="shop-secao">Presente de fraldas</h3><div class="fluxo">';
+    if (prioridadeFraldas) {
+      h += '<p style="text-align:center;font-size:.82rem;color:var(--gold);border:1px dashed var(--hairline);padding:10px 14px;margin-bottom:6px;">' + esc(prioridadeFraldas) + '</p>';
+    }
     h += '<span class="fluxo__label">1 · Escolha o tamanho</span><div class="pills" data-grupo="tam">';
     TAMANHOS.forEach(t => {
       h += '<button class="pill' + (fralda.tam === t ? ' is-ativa' : '') + '" data-tam="' + esc(t) + '" type="button">' + esc(t) + '</button>';
@@ -1258,7 +1323,19 @@
     h += '<form id="form-confirma" novalidate>';
     h += '<div class="form-campo" id="campo-nome"><label for="f-nome">Seu nome *</label><input id="f-nome" type="text" autocomplete="name"><p class="form-erro">Conte para a gente quem está presenteando.</p></div>';
     h += '<div class="form-campo" id="campo-tel"><label for="f-tel">Telefone *</label><input id="f-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="090-0000-0000"><p class="form-erro">Deixe um telefone para conseguirmos falar com você.</p></div>';
+    h += '<div class="form-campo"><label for="f-comp">Acompanhantes</label><input id="f-comp" type="number" inputmode="numeric" min="0" max="10" value="0"></div>';
     h += '<div class="form-campo"><label for="f-msg">Mensagem para os papais (opcional)</label><textarea id="f-msg" maxlength="300"></textarea></div>';
+    h += '<div class="msg-bebe">' +
+      '<p class="msg-bebe__titulo">Uma mensagem para Miguel ou Zoe</p>' +
+      '<p class="msg-bebe__apoio">Deixe algumas palavras de carinho, amor, conselho ou uma lembrança especial para o nosso bebê. Essa mensagem ficará guardada com muito carinho por Victor e Paula.</p>' +
+      '<div class="pills" id="baby-dest">' +
+        '<button class="pill" type="button" data-dest="miguel">Para Miguel</button>' +
+        '<button class="pill" type="button" data-dest="zoe">Para Zoe</button>' +
+        '<button class="pill is-ativa" type="button" data-dest="baby">Para o bebê</button>' +
+      '</div>' +
+      '<div class="form-campo" style="margin-top:14px;"><textarea id="f-baby" maxlength="500" placeholder="Escreva aqui uma mensagem especial para Miguel ou Zoe..." style="min-height:110px;"></textarea>' +
+      '<p class="msg-bebe__cont"><span id="f-baby-cont">0</span>/500</p></div>' +
+    '</div>';
     h += '<div class="fluxo__acao"><button class="btn btn--solid" type="submit">Confirmar presente</button>' +
       '<button class="link-btn" type="button" data-voltar-lista>Voltar e escolher outro</button></div>';
     h += '</form></div>';
@@ -1271,11 +1348,14 @@
       '<div class="obrigado__selo">&#10003;</div>' +
       '<h2>Muito obrigado!</h2>' +
       '<p>Seu presente <strong>' + esc(ultimaEscolha.rotulo) + '</strong> foi registrado com carinho. Mal podemos esperar para te ver no dia 29 de agosto!</p>' +
+      (ultimaEscolha.baby ? '<p style="color:var(--gold);">Mensagem guardada com carinho 💛</p>' : '') +
+      (ultimaEscolha.codigo ? '<p style="font-size:.85rem;">Para consultar ou alterar depois, use seu telefone e o código <strong>' + esc(ultimaEscolha.codigo) + '</strong> em &ldquo;Minhas escolhas&rdquo;.</p>' : '') +
       '<div class="fluxo__acao"><button class="btn" type="button" data-ir-minhas>Ver minhas escolhas</button>' +
       '<button class="link-btn" type="button" data-ir-home>Continuar na lista</button></div></div>';
   }
 
   function telaMinhas(){
+    if (usaSupabase()) { telaMinhasSupabase(); return; }
     const escolhas = lerEscolhas();
     let h = '<h3 class="shop-secao">Minhas escolhas</h3>';
     if (!escolhas.length) {
@@ -1293,6 +1373,117 @@
     }
     shopBody.innerHTML = h;
   }
+
+  let meusDados = null;
+  function telaMinhasSupabase(){
+    let acesso = { tel: '', codigo: '' };
+    try { acesso = JSON.parse(localStorage.getItem('meu-acesso') || '{}'); } catch(e) {}
+    let h = '<h3 class="shop-secao">Minhas escolhas</h3><div class="fluxo">';
+    if (!meusDados) {
+      h += '<p style="text-align:center;color:var(--ink-soft);font-size:.9rem;margin-bottom:18px;">Digite o telefone usado na confirmação e o código de 4 dígitos que você recebeu.</p>';
+      h += '<form id="form-minhas" novalidate>';
+      h += '<div class="form-campo" id="campo-mtel"><label for="m-tel">Telefone</label><input id="m-tel" type="tel" inputmode="tel" value="' + esc(acesso.tel || '') + '"><p class="form-erro">Não encontramos esse telefone com esse código.</p></div>';
+      h += '<div class="form-campo"><label for="m-cod">Código</label><input id="m-cod" type="text" inputmode="numeric" maxlength="4" value="' + esc(acesso.codigo || '') + '"></div>';
+      h += '<div class="fluxo__acao"><button class="btn btn--solid" type="submit">Consultar</button></div></form>';
+    } else {
+      const d = meusDados;
+      h += '<p style="text-align:center;margin-bottom:16px;">Olá, <strong>' + esc(d.guest.name) + '</strong>!</p>';
+      (d.diapers || []).forEach(f => {
+        h += '<div class="escolha-item" data-fralda="' + f.id + '"><strong>Fraldas ' + esc(f.size) + ' · ' + esc(f.brand) + ' · ' + f.qty + ' pacote' + (f.qty > 1 ? 's' : '') + '</strong>' +
+          '<div class="escolha-item__acoes"><button class="link-btn" type="button" data-editar-fralda="' + f.id + '" data-size="' + esc(f.size) + '" data-brand="' + esc(f.brand) + '" data-qty="' + f.qty + '">Alterar</button></div></div>';
+      });
+      (d.gifts || []).forEach(g => {
+        h += '<div class="escolha-item"><strong>' + esc(g.name) + '</strong><small>' + (g.status === 'received' ? 'Recebido' : 'Reservado') + '</small>' +
+          (g.status === 'reserved' ? '<div class="escolha-item__acoes"><button class="link-btn link-btn--vermelho" type="button" data-cancelar-presente="' + g.id + '">Cancelar (poderei escolher outro)</button></div>' : '') + '</div>';
+      });
+      (d.messages || []).forEach(m => {
+        h += '<div class="escolha-item"><strong>Mensagem para ' + (m.recipient === 'miguel' ? 'Miguel' : m.recipient === 'zoe' ? 'Zoe' : 'o bebê') + '</strong><small>&ldquo;' + esc(m.message) + '&rdquo;</small>' +
+          '<div class="escolha-item__acoes"><button class="link-btn" type="button" data-editar-msg="' + m.id + '">Editar mensagem</button></div></div>';
+      });
+      if (!(d.diapers || []).length && !(d.gifts || []).length && !(d.messages || []).length) {
+        h += '<p class="shop-vazio">Nenhuma escolha registrada ainda.</p>';
+      }
+      h += '<div class="fluxo__acao"><button class="link-btn" type="button" data-sair-minhas>Consultar outro telefone</button></div>';
+    }
+    h += '</div>';
+    shopBody.innerHTML = h;
+  }
+  async function consultarMinhas(tel, cod){
+    const { data } = await sb.rpc('my_choices', { p_phone: tel, p_code: cod });
+    if (data && data.ok) {
+      meusDados = data;
+      try { localStorage.setItem('meu-acesso', JSON.stringify({ tel: tel, codigo: cod })); } catch(e) {}
+      telaMinhasSupabase();
+      shopBody.insertAdjacentHTML('beforeend', RODAPE_LISTA);
+      return true;
+    }
+    return false;
+  }
+  shopBody.addEventListener('submit', async (e) => {
+    if (e.target.id !== 'form-minhas') return;
+    e.preventDefault();
+    const tel = document.getElementById('m-tel').value.trim();
+    const cod = document.getElementById('m-cod').value.trim();
+    const ok = await consultarMinhas(tel, cod);
+    if (!ok) document.getElementById('campo-mtel').classList.add('tem-erro');
+  });
+  shopBody.addEventListener('click', async (e) => {
+    if (!usaSupabase()) return;
+    if (e.target.closest('[data-sair-minhas]')) { meusDados = null; telaMinhasSupabase(); return; }
+    const cp = e.target.closest('[data-cancelar-presente]');
+    let acesso = {};
+    try { acesso = JSON.parse(localStorage.getItem('meu-acesso') || '{}'); } catch(err) {}
+    if (cp) {
+      await sb.rpc('my_cancel_gift', { p_phone: acesso.tel, p_code: acesso.codigo, p_id: cp.dataset.cancelarPresente });
+      await carregarStatusPresentes();
+      await consultarMinhas(acesso.tel, acesso.codigo);
+      return;
+    }
+    const ef = e.target.closest('[data-editar-fralda]');
+    if (ef) {
+      const alvo = ef.closest('.escolha-item');
+      alvo.innerHTML = '<strong>Alterar fraldas</strong>' +
+        '<div class="pills" style="margin:10px 0;">' + TAMANHOS.map(t => '<button class="pill' + ((t.startsWith('新生児') ? '新生児' : t) === ef.dataset.size ? ' is-ativa' : '') + '" type="button" data-nf-tam="' + esc(t) + '">' + esc(t) + '</button>').join('') + '</div>' +
+        '<div class="pills" style="margin-bottom:10px;">' + MARCAS.map(m => '<button class="pill' + (m === ef.dataset.brand ? ' is-ativa' : '') + '" type="button" data-nf-marca="' + esc(m) + '">' + esc(m) + '</button>').join('') + '</div>' +
+        '<div class="stepper"><button type="button" data-nf-menos>&#8722;</button><span id="nf-qtd">' + ef.dataset.qty + '</span><button type="button" data-nf-mais>+</button></div>' +
+        '<div class="escolha-item__acoes"><button class="link-btn" type="button" data-nf-salvar="' + ef.dataset.editarFralda + '">Salvar</button></div>';
+      alvo.dataset.nfTam = ef.dataset.size; alvo.dataset.nfMarca = ef.dataset.brand;
+      return;
+    }
+    const nfTam = e.target.closest('[data-nf-tam]');
+    if (nfTam) { const box = nfTam.closest('.escolha-item'); box.dataset.nfTam = nfTam.dataset.nfTam.startsWith('新生児') ? '新生児' : nfTam.dataset.nfTam; box.querySelectorAll('[data-nf-tam]').forEach(p => p.classList.toggle('is-ativa', p === nfTam)); return; }
+    const nfMarca = e.target.closest('[data-nf-marca]');
+    if (nfMarca) { const box = nfMarca.closest('.escolha-item'); box.dataset.nfMarca = nfMarca.dataset.nfMarca; box.querySelectorAll('[data-nf-marca]').forEach(p => p.classList.toggle('is-ativa', p === nfMarca)); return; }
+    if (e.target.closest('[data-nf-menos]') || e.target.closest('[data-nf-mais]')) {
+      const el = document.getElementById('nf-qtd');
+      el.textContent = Math.min(6, Math.max(1, Number(el.textContent) + (e.target.closest('[data-nf-mais]') ? 1 : -1)));
+      return;
+    }
+    const nfS = e.target.closest('[data-nf-salvar]');
+    if (nfS) {
+      const box = nfS.closest('.escolha-item');
+      await sb.rpc('my_update_diaper', { p_phone: acesso.tel, p_code: acesso.codigo, p_id: nfS.dataset.nfSalvar,
+        p_size: box.dataset.nfTam, p_brand: box.dataset.nfMarca, p_qty: Number(document.getElementById('nf-qtd').textContent) });
+      await consultarMinhas(acesso.tel, acesso.codigo);
+      return;
+    }
+    const em = e.target.closest('[data-editar-msg]');
+    if (em) {
+      const alvo = em.closest('.escolha-item');
+      const msg = meusDados.messages.find(m => m.id === em.dataset.editarMsg);
+      alvo.innerHTML = '<strong>Editar mensagem</strong>' +
+        '<div class="form-campo" style="margin:10px 0 6px;"><textarea id="nm-texto" maxlength="500" style="min-height:100px;">' + esc(msg.message) + '</textarea></div>' +
+        '<div class="escolha-item__acoes"><button class="link-btn" type="button" data-nm-salvar="' + msg.id + '" data-rec="' + msg.recipient + '">Salvar</button></div>';
+      return;
+    }
+    const nm = e.target.closest('[data-nm-salvar]');
+    if (nm) {
+      await sb.rpc('my_update_message', { p_phone: acesso.tel, p_code: acesso.codigo, p_id: nm.dataset.nmSalvar,
+        p_recipient: nm.dataset.rec, p_message: document.getElementById('nm-texto').value });
+      await consultarMinhas(acesso.tel, acesso.codigo);
+      return;
+    }
+  });
 
   // --- roteador ---
   const RODAPE_LISTA = '<div class="shop-rodape"><button class="btn btn--solid" type="button" data-sair>Voltar ao convite</button></div>';
@@ -1354,7 +1545,7 @@
       const p = ITENS.find(x => x.id === escolher.dataset.escolher);
       if (!p) return;
       if (p.id === 'fr-fraldas') { fralda = { tam: null, marca: 'Sem preferência', qtd: 1 }; location.hash = '#presentes/fraldas'; return; }
-      iniciarEscolha({ id: p.id, rotulo: p.nome, preco: p.preco, icone: p.icone });
+      iniciarEscolha({ tipo: 'presente', id: p.id, rotulo: p.nome, preco: p.preco, icone: p.icone });
       return;
     }
     if (e.target.closest('[data-sair]')) { voltarAoConvite(); return; }
@@ -1371,6 +1562,7 @@
     if (qtd) { fralda.qtd = Math.min(6, Math.max(1, fralda.qtd + Number(qtd.dataset.qtd))); telaFraldas(); return; }
     if (e.target.closest('[data-fralda-ok]') && fralda.tam) {
       iniciarEscolha({
+        tipo: 'fralda', tam: fralda.tam, marca: fralda.marca, pacotes: fralda.qtd,
         id: 'fralda-' + fralda.tam + '-' + fralda.marca + '-' + fralda.qtd + '-' + Date.now(),
         rotulo: 'Fraldas ' + fralda.tam + ' · ' + fralda.marca + ' · ' + fralda.qtd + ' pacote' + (fralda.qtd > 1 ? 's' : ''),
         preco: '', icone: 'ic-fralda'
@@ -1412,26 +1604,81 @@
     alvo.innerHTML = '<h3 class="shop-secao">Resultado da busca</h3>' + htmlListaItens(achados);
   });
 
-  shopBody.addEventListener('submit', (e) => {
+  let babyDest = 'baby';
+  shopBody.addEventListener('click', (e) => {
+    const d = e.target.closest('[data-dest]');
+    if (!d) return;
+    babyDest = d.dataset.dest;
+    document.querySelectorAll('#baby-dest .pill').forEach(p => p.classList.toggle('is-ativa', p === d));
+  });
+  shopBody.addEventListener('input', (e) => {
+    if (e.target.id !== 'f-baby') return;
+    const cont = document.getElementById('f-baby-cont');
+    if (cont) cont.textContent = e.target.value.length;
+  });
+
+  shopBody.addEventListener('submit', async (e) => {
     if (e.target.id !== 'form-confirma') return;
     e.preventDefault();
     const nome = document.getElementById('f-nome');
     const tel = document.getElementById('f-tel');
+    const comp = document.getElementById('f-comp');
     const msg = document.getElementById('f-msg');
-    let ok = true;
+    const baby = document.getElementById('f-baby');
     document.getElementById('campo-nome').classList.toggle('tem-erro', !nome.value.trim());
     document.getElementById('campo-tel').classList.toggle('tem-erro', !tel.value.trim());
     if (!nome.value.trim() || !tel.value.trim()) return;
     if (!pendente) { location.hash = '#presentes'; return; }
-    if (idsTomados().has(pendente.id)) { location.hash = '#presentes'; return; }
+
     const registro = {
       id: pendente.id,
       rotulo: pendente.rotulo,
       nome: nome.value.trim(),
       tel: tel.value.trim(),
       msg: msg.value.trim(),
+      baby: baby.value.trim(),
+      babyDest: babyDest,
       ts: Date.now()
     };
+
+    if (usaSupabase()) {
+      const botao = e.target.querySelector('button[type=submit]');
+      botao.disabled = true; botao.textContent = 'Enviando...';
+      let palpite = null;
+      try { palpite = localStorage.getItem('palpite-bebe') || null; } catch(err) {}
+      const params = {
+        p_name: registro.nome, p_phone: registro.tel,
+        p_companions: Math.max(0, Number(comp.value) || 0),
+        p_vote: palpite,
+        p_gift_message: registro.msg || null,
+        p_baby_recipient: registro.baby ? babyDest : null,
+        p_baby_message: registro.baby || null
+      };
+      if (pendente.tipo === 'fralda') {
+        params.p_diaper_size = pendente.tam.startsWith('新生児') ? '新生児' : pendente.tam;
+        params.p_diaper_brand = pendente.marca;
+        params.p_diaper_qty = pendente.pacotes;
+      } else {
+        params.p_gift_id = pendente.id;
+      }
+      const { data, error } = await sb.rpc('public_confirm', params);
+      botao.disabled = false; botao.textContent = 'Confirmar presente';
+      if (error || !data || !data.ok) {
+        await carregarStatusPresentes();
+        if (data && data.error === 'presente_ja_escolhido') {
+          pendente = null;
+          location.hash = '#presentes';
+          return;
+        }
+        document.getElementById('campo-tel').classList.add('tem-erro');
+        document.querySelector('#campo-tel .form-erro').textContent = 'Não foi possível registrar agora. Verifique a conexão e tente novamente.';
+        return;
+      }
+      registro.codigo = data.code;
+      try { localStorage.setItem('meu-acesso', JSON.stringify({ tel: registro.tel, codigo: data.code })); } catch(err) {}
+      await carregarStatusPresentes();
+    }
+
     const arr = lerEscolhas();
     arr.push(registro);
     gravarEscolhas(arr);
@@ -1453,6 +1700,39 @@
     });
   }, { threshold: 0.15 });
   document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+  document.getElementById('form-rsvp').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!usaSupabase()) return;
+    const nome = document.getElementById('r-nome');
+    const tel = document.getElementById('r-tel');
+    document.getElementById('campo-rnome').classList.toggle('tem-erro', !nome.value.trim());
+    document.getElementById('campo-rtel').classList.toggle('tem-erro', !tel.value.trim());
+    if (!nome.value.trim() || !tel.value.trim()) return;
+    let palpite = null;
+    try { palpite = localStorage.getItem('palpite-bebe') || null; } catch(err) {}
+    const botao = e.target.querySelector('button[type=submit]');
+    botao.disabled = true; botao.textContent = 'Enviando...';
+    const { data, error } = await sb.rpc('public_confirm', {
+      p_name: nome.value.trim(), p_phone: tel.value.trim(),
+      p_companions: Math.max(0, Number(document.getElementById('r-comp').value) || 0),
+      p_vote: palpite
+    });
+    botao.disabled = false; botao.textContent = 'Confirmar presença';
+    const okEl = document.getElementById('rsvp-ok');
+    if (error || !data || !data.ok) {
+      okEl.hidden = false;
+      okEl.style.color = '#a3564e';
+      okEl.textContent = 'Não foi possível confirmar agora. Tente de novo em instantes.';
+      return;
+    }
+    try { localStorage.setItem('meu-acesso', JSON.stringify({ tel: tel.value.trim(), codigo: data.code })); } catch(err) {}
+    okEl.hidden = false;
+    okEl.style.color = '';
+    okEl.textContent = 'Presença confirmada com carinho! Seu código é ' + data.code + ' — guarde para consultar suas escolhas.';
+  });
+
+  iniciarSupabase();
 </script>
 
 </body>
