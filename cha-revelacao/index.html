@@ -281,7 +281,7 @@
   .container--wide{max-width:1000px;margin:0 auto;padding:0 28px;}
   .gift-actions{margin-top:6px;}
 
-  /* ===== Cantinho dos Mimos (página interna) ===== */
+  /* ===== Lista de Presentes (página interna) ===== */
   .shop{
     position:fixed;inset:0;z-index:90;
     background:var(--paper);
@@ -300,19 +300,23 @@
   }
   .shop__back{
     flex-shrink:0;
-    width:40px;height:40px;
     border:1px solid var(--hairline);
     background:transparent;
     color:var(--ink);
-    font-size:1.05rem;
+    font-family:var(--font-body);
+    font-size:.58rem;font-weight:500;
+    letter-spacing:.12em;text-transform:uppercase;
+    padding:11px 10px;
     cursor:pointer;
     transition:background .2s ease,color .2s ease;
+    white-space:nowrap;
   }
+  @media (max-width:479px){.shop__back-longo{display:none;}}
   .shop__back:hover{background:var(--ink);color:var(--paper);}
   .shop__title{
     font-family:var(--font-script);
     font-weight:600;
-    font-size:clamp(1.15rem,4.5vw,1.5rem);
+    font-size:clamp(.98rem,3.8vw,1.5rem);
     line-height:1;
     flex:1;
     text-align:center;
@@ -344,8 +348,15 @@
   .shop__body{
     max-width:860px;
     margin:0 auto;
-    padding:26px 18px 90px;
+    padding:26px 18px 60px;
   }
+  .shop-rodape{
+    margin-top:56px;
+    padding-top:32px;
+    border-top:1px solid var(--hairline);
+    display:flex;justify-content:center;
+  }
+  .shop-rodape .btn{width:100%;max-width:380px;}
 
   .shop-intro{text-align:center;margin-bottom:24px;}
   .shop-intro p{
@@ -896,10 +907,10 @@
   </section>
 </main>
 
-<section class="shop" id="mimos" hidden>
+<section class="shop" id="pagina-presentes" hidden>
   <header class="shop__top">
-    <button class="shop__back" id="shop-voltar" type="button" aria-label="Voltar">&#8592;</button>
-    <p class="shop__title">Cantinho dos Mimos</p>
+    <button class="shop__back" id="shop-voltar" type="button">&#8592; Voltar<span class="shop__back-longo"> ao convite</span></button>
+    <p class="shop__title">Lista de Presentes</p>
     <button class="shop__mine" id="shop-minhas" type="button">Minhas escolhas<span class="shop__badge" id="shop-badge" hidden></span></button>
   </header>
   <div class="shop__body" id="shop-body"></div>
@@ -980,7 +991,7 @@
     if (salvo && frases[salvo]) escolher(salvo, false);
   } catch(e) {}
 
-  // ===== Cantinho dos Mimos =====
+  // ===== Lista de Presentes =====
   const CATS = [
     { id: 'fraldas',     nome: 'Fraldas',     icone: 'ic-fralda',    cor: '#ece3d2' },
     { id: 'higiene',     nome: 'Higiene',     icone: 'ic-frasco',    cor: '#e5e2dc' },
@@ -1106,9 +1117,22 @@
   const MARCAS = ['Merries', 'Moony', 'Pampers Japão', 'Genki!', 'GOO.N', 'Sem preferência'];
   const LOTE = 24;
 
-  const shopEl = document.getElementById('mimos');
+  const shopEl = document.getElementById('pagina-presentes');
   const shopBody = document.getElementById('shop-body');
   const shopBadge = document.getElementById('shop-badge');
+  let scrollSalvo = null;
+  let listaAberta = false;
+  function rolarPara(y){
+    const raiz = document.documentElement;
+    const anterior = raiz.style.scrollBehavior;
+    raiz.style.scrollBehavior = 'auto';
+    window.scrollTo(0, y);
+    raiz.style.scrollBehavior = anterior;
+  }
+  function voltarAoConvite(){
+    history.replaceState(null, '', location.pathname + location.search);
+    rota();
+  }
   let pendente = null;     // presente aguardando confirmação
   let ultimaEscolha = null;
   let fralda = { tam: null, marca: 'Sem preferência', qtd: 1 };
@@ -1163,7 +1187,8 @@
 
   // --- telas ---
   function telaHome(){
-    let h = '<div class="shop-intro"><p>Escolha uma fralda e, se desejar, um pequeno presente para o bebê. Tudo foi pensado com carinho e em opções fáceis de encontrar no Japão.</p></div>';
+    let h = '<div class="shop-intro"><p>Escolha uma fralda e, se desejar, um presente para o bebê. Organizamos algumas sugestões fáceis de encontrar no Japão.</p>' +
+      '<p style="margin-top:10px;font-size:.78rem;">Você encontra tudo em Akachan Honpo, Nishimatsuya, Babies&rdquo;R&rdquo;Us ou na Amazon Japão.</p></div>';
     h += htmlBusca();
     h += htmlChips(null);
     h += '<div id="shop-resultado">';
@@ -1173,7 +1198,7 @@
       h += '<button class="cat-card" data-cat="' + c.id + '" type="button">' +
         '<span class="cat-card__icon" style="background:' + c.cor + '"><svg viewBox="0 0 24 24"><use href="#' + c.icone + '"/></svg></span>' +
         '<span class="cat-card__nome">' + c.nome + '</span>' +
-        '<span class="cat-card__qtd">' + qtd + ' mimos</span></button>';
+        '<span class="cat-card__qtd">' + qtd + ' itens</span></button>';
     });
     h += '</div></div>';
     shopBody.innerHTML = h;
@@ -1181,7 +1206,7 @@
 
   function telaLista(catId){
     const cat = CATS.find(c => c.id === catId);
-    const titulo = catId === 'todos' ? 'Todos os mimos' : (cat ? cat.nome : '');
+    const titulo = catId === 'todos' ? 'Todos os presentes' : (cat ? cat.nome : '');
     let itens = catId === 'todos' ? ITENS : ITENS.filter(p => p.cat === catId);
     let h = htmlBusca() + htmlChips(catId);
     h += '<h3 class="shop-secao">' + titulo + '</h3>';
@@ -1191,7 +1216,7 @@
 
   function htmlListaItens(itens){
     const tomados = idsTomados();
-    if (!itens.length) return '<p class="shop-vazio">Nenhum mimo encontrado por aqui... tente outra palavra.</p>';
+    if (!itens.length) return '<p class="shop-vazio">Nenhum presente encontrado por aqui... tente outra palavra.</p>';
     const visiveis = itens.slice(0, mostrando);
     let h = '<div class="mimo-lista">';
     visiveis.forEach(p => { h += htmlMimo(p, tomados); });
@@ -1225,7 +1250,7 @@
   }
 
   function telaConfirmar(){
-    if (!pendente) { location.hash = '#mimos'; return; }
+    if (!pendente) { location.hash = '#presentes'; return; }
     let h = '<h3 class="shop-secao">Confirmar presente</h3><div class="fluxo">';
     h += '<div class="resumo-presente">' +
       '<span class="mimo__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#' + pendente.icone + '"/></svg></span>' +
@@ -1241,21 +1266,21 @@
   }
 
   function telaObrigado(){
-    if (!ultimaEscolha) { location.hash = '#mimos'; return; }
+    if (!ultimaEscolha) { location.hash = '#presentes'; return; }
     shopBody.innerHTML = '<div class="obrigado">' +
       '<div class="obrigado__selo">&#10003;</div>' +
       '<h2>Muito obrigado!</h2>' +
       '<p>Seu presente <strong>' + esc(ultimaEscolha.rotulo) + '</strong> foi registrado com carinho. Mal podemos esperar para te ver no dia 29 de agosto!</p>' +
       '<div class="fluxo__acao"><button class="btn" type="button" data-ir-minhas>Ver minhas escolhas</button>' +
-      '<button class="link-btn" type="button" data-ir-home>Voltar ao Cantinho dos Mimos</button></div></div>';
+      '<button class="link-btn" type="button" data-ir-home>Continuar na lista</button></div></div>';
   }
 
   function telaMinhas(){
     const escolhas = lerEscolhas();
     let h = '<h3 class="shop-secao">Minhas escolhas</h3>';
     if (!escolhas.length) {
-      h += '<p class="shop-vazio">Você ainda não escolheu nenhum mimo. Que tal dar uma olhadinha?</p>' +
-        '<div class="fluxo__acao"><button class="btn" type="button" data-ir-home>Ver os mimos</button></div>';
+      h += '<p class="shop-vazio">Você ainda não escolheu nenhum presente. Que tal dar uma olhadinha?</p>' +
+        '<div class="fluxo__acao"><button class="btn" type="button" data-ir-home>Ver a lista</button></div>';
     } else {
       escolhas.forEach((e2, i) => {
         h += '<div class="escolha-item" data-idx="' + i + '">' +
@@ -1270,59 +1295,69 @@
   }
 
   // --- roteador ---
+  const RODAPE_LISTA = '<div class="shop-rodape"><button class="btn btn--solid" type="button" data-sair>Voltar ao convite</button></div>';
   function rota(){
     const h = location.hash;
-    if (!h.startsWith('#mimos')) {
+    if (!h.startsWith('#presentes')) {
       shopEl.hidden = true;
       document.body.classList.remove('shop-aberta');
+      if (listaAberta) {
+        listaAberta = false;
+        const secao = document.getElementById('presente');
+        rolarPara(scrollSalvo != null ? scrollSalvo : (secao ? secao.offsetTop : 0));
+        scrollSalvo = null;
+      }
       return;
+    }
+    if (!listaAberta) {
+      if (scrollSalvo === null) scrollSalvo = window.scrollY;
+      listaAberta = true;
     }
     shopEl.hidden = false;
     document.body.classList.add('shop-aberta');
     atualizarBadge();
     const partes = h.split('/');
-    if (h === '#mimos') { buscaTexto = ''; mostrando = LOTE; telaHome(); }
+    if (h === '#presentes') { buscaTexto = ''; mostrando = LOTE; telaHome(); }
     else if (partes[1] === 'cat') { mostrando = LOTE; telaLista(partes[2] || 'todos'); }
     else if (partes[1] === 'fraldas') telaFraldas();
     else if (partes[1] === 'confirmar') telaConfirmar();
     else if (partes[1] === 'obrigado') telaObrigado();
     else if (partes[1] === 'minhas') telaMinhas();
     else telaHome();
+    shopBody.insertAdjacentHTML('beforeend', RODAPE_LISTA);
     shopEl.scrollTop = 0;
   }
   window.addEventListener('hashchange', rota);
 
   // --- ações ---
-  document.getElementById('abrir-lista').addEventListener('click', () => { location.hash = '#mimos'; });
-  document.getElementById('shop-minhas').addEventListener('click', () => { location.hash = '#mimos/minhas'; });
-  document.getElementById('shop-voltar').addEventListener('click', () => {
-    if (location.hash === '#mimos') {
-      history.length > 1 ? history.back() : (location.hash = '');
-    } else {
-      location.hash = '#mimos';
-    }
+  document.getElementById('abrir-lista').addEventListener('click', () => {
+    scrollSalvo = window.scrollY;
+    location.hash = '#presentes';
   });
+  document.getElementById('shop-minhas').addEventListener('click', () => { location.hash = '#presentes/minhas'; });
+  document.getElementById('shop-voltar').addEventListener('click', voltarAoConvite);
 
   function iniciarEscolha(p){
     pendente = p;
-    location.hash = '#mimos/confirmar';
+    location.hash = '#presentes/confirmar';
   }
 
   shopBody.addEventListener('click', (e) => {
     const cat = e.target.closest('[data-cat]');
     if (cat) {
       const id = cat.dataset.cat;
-      location.hash = id === 'fraldas' && cat.classList.contains('cat-card') ? '#mimos/cat/fraldas' : '#mimos/cat/' + id;
+      location.hash = id === 'fraldas' && cat.classList.contains('cat-card') ? '#presentes/cat/fraldas' : '#presentes/cat/' + id;
       return;
     }
     const escolher = e.target.closest('[data-escolher]');
     if (escolher && !escolher.disabled) {
       const p = ITENS.find(x => x.id === escolher.dataset.escolher);
       if (!p) return;
-      if (p.id === 'fr-fraldas') { fralda = { tam: null, marca: 'Sem preferência', qtd: 1 }; location.hash = '#mimos/fraldas'; return; }
+      if (p.id === 'fr-fraldas') { fralda = { tam: null, marca: 'Sem preferência', qtd: 1 }; location.hash = '#presentes/fraldas'; return; }
       iniciarEscolha({ id: p.id, rotulo: p.nome, preco: p.preco, icone: p.icone });
       return;
     }
+    if (e.target.closest('[data-sair]')) { voltarAoConvite(); return; }
     if (e.target.closest('[data-vermais]')) {
       mostrando += LOTE;
       rota();
@@ -1342,9 +1377,9 @@
       });
       return;
     }
-    if (e.target.closest('[data-voltar-lista]')) { pendente = null; location.hash = '#mimos'; return; }
-    if (e.target.closest('[data-ir-home]')) { location.hash = '#mimos'; return; }
-    if (e.target.closest('[data-ir-minhas]')) { location.hash = '#mimos/minhas'; return; }
+    if (e.target.closest('[data-voltar-lista]')) { pendente = null; location.hash = '#presentes'; return; }
+    if (e.target.closest('[data-ir-home]')) { location.hash = '#presentes'; return; }
+    if (e.target.closest('[data-ir-minhas]')) { location.hash = '#presentes/minhas'; return; }
     const cancelar = e.target.closest('[data-cancelar]');
     if (cancelar) {
       const acoes = cancelar.closest('[data-acoes]');
@@ -1387,8 +1422,8 @@
     document.getElementById('campo-nome').classList.toggle('tem-erro', !nome.value.trim());
     document.getElementById('campo-tel').classList.toggle('tem-erro', !tel.value.trim());
     if (!nome.value.trim() || !tel.value.trim()) return;
-    if (!pendente) { location.hash = '#mimos'; return; }
-    if (idsTomados().has(pendente.id)) { location.hash = '#mimos'; return; }
+    if (!pendente) { location.hash = '#presentes'; return; }
+    if (idsTomados().has(pendente.id)) { location.hash = '#presentes'; return; }
     const registro = {
       id: pendente.id,
       rotulo: pendente.rotulo,
@@ -1403,7 +1438,7 @@
     ultimaEscolha = registro;
     pendente = null;
     atualizarBadge();
-    location.hash = '#mimos/obrigado';
+    location.hash = '#presentes/obrigado';
   });
 
   rota();
