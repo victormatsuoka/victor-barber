@@ -281,127 +281,380 @@
   .container--wide{max-width:1000px;margin:0 auto;padding:0 28px;}
   .gift-actions{margin-top:6px;}
 
-  /* Modal da lista de presentes */
-  .gmodal{
+  /* ===== Cantinho dos Mimos (página interna) ===== */
+  .shop{
     position:fixed;inset:0;z-index:90;
-    display:flex;align-items:center;justify-content:center;
-    padding:18px;
-  }
-  .gmodal[hidden]{display:none;}
-  .gmodal__backdrop{
-    position:absolute;inset:0;
-    background:rgba(75,66,55,.45);
-    backdrop-filter:blur(3px);
-  }
-  .gmodal__panel{
-    position:relative;
     background:var(--paper);
-    border:1px solid var(--hairline);
-    border-radius:6px;
-    box-shadow:0 30px 80px rgba(51,41,31,.3);
-    width:min(940px,100%);
-    max-height:88vh;
-    display:flex;flex-direction:column;
-    overflow:hidden;
-  }
-  .gmodal__head{
-    padding:30px 32px 22px;
-    border-bottom:1px solid var(--hairline);
-    display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
-    text-align:left;
-  }
-  .gmodal__title{
-    font-family:var(--font-serif);
-    font-weight:500;
-    font-size:1.9rem;line-height:1.1;
-  }
-  .gmodal__sub{
-    font-size:.8rem;font-weight:400;
-    color:var(--ink-soft);
-    margin-top:8px;
-  }
-  .gmodal__close{
-    flex-shrink:0;
-    width:42px;height:42px;
-    border:1px solid var(--hairline);
-    border-radius:0;
-    background:transparent;
-    font-size:1rem;
-    color:var(--ink-soft);
-    cursor:pointer;
-    transition:background .25s ease,color .25s ease;
-  }
-  .gmodal__close:hover{background:var(--ink);color:var(--paper);}
-  .gmodal__body{
     overflow-y:auto;
-    padding:8px 32px 36px;
-    text-align:left;
+    -webkit-overflow-scrolling:touch;
   }
-  .ggroup{margin-top:32px;}
-  .ggroup__name{
+  .shop[hidden]{display:none;}
+  body.shop-aberta{overflow:hidden;}
+  .shop__top{
+    position:sticky;top:0;z-index:5;
+    background:rgba(250,247,241,.94);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--hairline);
+    display:flex;align-items:center;gap:10px;
+    padding:14px 16px;
+  }
+  .shop__back{
+    flex-shrink:0;
+    width:40px;height:40px;
+    border:1px solid var(--hairline);
+    background:transparent;
+    color:var(--ink);
+    font-size:1.05rem;
+    cursor:pointer;
+    transition:background .2s ease,color .2s ease;
+  }
+  .shop__back:hover{background:var(--ink);color:var(--paper);}
+  .shop__title{
+    font-family:var(--font-script);
+    font-weight:600;
+    font-size:clamp(1.15rem,4.5vw,1.5rem);
+    line-height:1;
+    flex:1;
+    text-align:center;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .shop__mine{
+    flex-shrink:0;
+    position:relative;
+    border:1px solid var(--hairline);
+    background:transparent;
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:.58rem;font-weight:500;
+    letter-spacing:.12em;text-transform:uppercase;
+    padding:11px 10px;
+    cursor:pointer;
+    transition:background .2s ease,color .2s ease;
+  }
+  .shop__mine:hover{background:var(--ink);color:var(--paper);}
+  .shop__badge{
+    position:absolute;top:-7px;right:-7px;
+    min-width:18px;height:18px;
+    border-radius:999px;
+    background:var(--gold);color:#fff;
+    font-size:.62rem;font-weight:500;
+    display:flex;align-items:center;justify-content:center;
+    padding:0 5px;
+  }
+  .shop__body{
+    max-width:860px;
+    margin:0 auto;
+    padding:26px 18px 90px;
+  }
+
+  .shop-intro{text-align:center;margin-bottom:24px;}
+  .shop-intro p{
+    max-width:430px;margin:0 auto;
+    color:var(--ink-soft);
+    font-size:.95rem;
+  }
+
+  .shop-busca{
+    display:flex;align-items:center;gap:10px;
+    border:1px solid var(--hairline);
+    background:#fffdf9;
+    padding:13px 16px;
+    margin-bottom:14px;
+  }
+  .shop-busca svg{width:17px;height:17px;fill:none;stroke:var(--ink-soft);stroke-width:1.6;stroke-linecap:round;flex-shrink:0;}
+  .shop-busca input{
+    flex:1;border:none;background:none;outline:none;
+    font-family:var(--font-body);font-weight:300;
+    font-size:.95rem;color:var(--ink);
+  }
+  .shop-busca input::placeholder{color:var(--ink-soft);}
+
+  .shop-chips{
+    display:flex;gap:8px;
+    overflow-x:auto;
+    padding:2px 2px 12px;
+    margin-bottom:16px;
+    scrollbar-width:none;
+  }
+  .shop-chips::-webkit-scrollbar{display:none;}
+  .chip{
+    flex-shrink:0;
+    border:1px solid var(--hairline);
+    background:transparent;
+    color:var(--ink-soft);
+    font-family:var(--font-body);
+    font-size:.68rem;font-weight:500;
+    letter-spacing:.16em;text-transform:uppercase;
+    padding:9px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:background .2s ease,color .2s ease,border-color .2s ease;
+  }
+  .chip:hover{border-color:var(--gold);color:var(--ink);}
+  .chip.is-ativa{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+
+  .cat-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+  }
+  @media (min-width:640px){.cat-grid{grid-template-columns:repeat(3,1fr);}}
+  .cat-card{
+    background:#fffdf9;
+    border:1px solid var(--hairline);
+    border-radius:4px;
+    padding:22px 14px 18px;
+    text-align:center;
+    cursor:pointer;
+    font-family:var(--font-body);
+    transition:border-color .25s ease,transform .25s ease;
+  }
+  .cat-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .cat-card__icon{
+    width:54px;height:54px;
+    border-radius:50%;
+    margin:0 auto 12px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink);
+  }
+  .cat-card__icon svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;}
+  .cat-card__nome{
+    font-family:var(--font-serif);
+    font-size:1.15rem;font-weight:600;
+    color:var(--ink);
+  }
+  .cat-card__qtd{
+    font-size:.7rem;font-weight:400;
+    letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-top:4px;
+    display:block;
+  }
+
+  .shop-secao{
     font-size:.72rem;font-weight:500;
     letter-spacing:.4em;text-transform:uppercase;
     color:var(--gold);
     display:flex;align-items:center;gap:16px;
+    margin:6px 0 16px;
   }
-  .ggroup__name::after{content:"";flex:1;height:1px;background:var(--hairline);}
-  .ggrid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
-    gap:12px;
-    margin-top:16px;
-  }
-  body.gmodal-aberto{overflow:hidden;}
-  .gift-card{
+  .shop-secao::after{content:"";flex:1;height:1px;background:var(--hairline);}
+
+  .mimo-lista{display:grid;gap:10px;}
+  @media (min-width:640px){.mimo-lista{grid-template-columns:1fr 1fr;}}
+  .mimo{
     background:#fffdf9;
     border:1px solid var(--hairline);
     border-radius:4px;
     padding:16px;
     display:grid;
-    grid-template-columns:46px 1fr;
-    column-gap:14px;row-gap:2px;
+    grid-template-columns:46px 1fr auto;
+    column-gap:14px;row-gap:3px;
     align-items:start;
-    transition:border-color .25s ease, transform .25s ease;
   }
-  .gift-card:hover{border-color:var(--gold);transform:translateY(-2px);}
-  .gift-card__icon{
-    grid-row:1 / span 3;
+  .mimo__icon{
+    grid-row:1 / span 4;
     width:46px;height:46px;
     border-radius:50%;
     background:#f3eee1;
     display:flex;align-items:center;justify-content:center;
     color:var(--gold);
   }
-  .gift-card__icon svg{
-    width:26px;height:26px;
-    fill:none;stroke:currentColor;
-    stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;
-  }
-  .gift-card__name{
+  .mimo__icon svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;}
+  .mimo__nome{
+    grid-column:2;
     font-family:var(--font-serif);
-    font-size:1.18rem;font-weight:600;
-    line-height:1.25;
+    font-size:1.14rem;font-weight:600;line-height:1.25;
   }
-  .gift-card__note{
-    font-size:.76rem;font-weight:400;
+  .mimo__desc{
+    grid-column:2 / span 2;
+    font-size:.8rem;font-weight:300;
     color:var(--ink-soft);
-    min-height:1.3em;
+    line-height:1.5;
   }
-  .gift-card__btn{
-    margin-top:10px;
-    justify-self:start;
-    background:transparent;
+  .mimo__meta{
+    grid-column:2 / span 2;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    font-size:.72rem;color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .mimo__preco{font-weight:500;letter-spacing:.06em;}
+  .mimo__status{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:.64rem;font-weight:500;
+    letter-spacing:.14em;text-transform:uppercase;
+  }
+  .mimo__status::before{content:"";width:6px;height:6px;border-radius:50%;}
+  .mimo__status--livre{color:#7d9471;}
+  .mimo__status--livre::before{background:#7d9471;}
+  .mimo__status--escolhido{color:var(--gold);}
+  .mimo__status--escolhido::before{background:var(--gold);}
+  .mimo__btn{
+    grid-column:3;grid-row:1;
+    align-self:start;
     border:1px solid var(--ink);
+    background:transparent;
     border-radius:999px;
-    padding:7px 18px;
+    padding:8px 18px;
     font-family:var(--font-body);
-    font-size:.66rem;font-weight:500;
-    letter-spacing:.22em;text-transform:uppercase;
+    font-size:.64rem;font-weight:500;
+    letter-spacing:.2em;text-transform:uppercase;
     color:var(--ink);
     cursor:pointer;
-    transition:background .25s ease,color .25s ease;
+    transition:background .2s ease,color .2s ease;
   }
-  .gift-card__btn:hover{background:var(--ink);color:var(--paper);}
+  .mimo__btn:hover{background:var(--ink);color:var(--paper);}
+  .mimo__btn:disabled{
+    border-color:var(--hairline);
+    color:var(--ink-soft);
+    cursor:default;background:transparent;
+  }
+  .mimo--escolhido{background:#f4f0e5;border-color:#e0d8c4;}
+  .mimo--escolhido .mimo__nome{color:var(--ink-soft);}
+
+  .ver-mais{display:flex;justify-content:center;margin-top:22px;}
+
+  .shop-vazio{
+    text-align:center;
+    color:var(--ink-soft);
+    padding:40px 20px;
+    font-size:.95rem;
+  }
+
+  /* Fluxo de fraldas + formulários */
+  .fluxo{max-width:480px;margin:0 auto;}
+  .fluxo__label{
+    display:block;
+    font-size:.68rem;font-weight:500;
+    letter-spacing:.3em;text-transform:uppercase;
+    color:var(--gold);
+    margin:26px 0 12px;
+  }
+  .fluxo__label:first-child{margin-top:0;}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;}
+  .pill{
+    border:1px solid var(--hairline);
+    background:#fffdf9;
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:.85rem;font-weight:400;
+    padding:11px 18px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:background .2s ease,color .2s ease,border-color .2s ease;
+  }
+  .pill:hover{border-color:var(--gold);}
+  .pill.is-ativa{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .stepper{
+    display:inline-flex;align-items:center;
+    border:1px solid var(--hairline);
+    background:#fffdf9;
+  }
+  .stepper button{
+    width:46px;height:46px;
+    border:none;background:none;
+    font-size:1.2rem;color:var(--ink);
+    cursor:pointer;
+  }
+  .stepper button:disabled{color:var(--hairline);cursor:default;}
+  .stepper span{
+    min-width:56px;text-align:center;
+    font-family:var(--font-serif);
+    font-size:1.3rem;font-weight:600;
+  }
+  .fluxo__resumo{
+    margin-top:28px;
+    border:1px dashed var(--hairline);
+    padding:18px 20px;
+    font-size:.9rem;color:var(--ink-soft);
+    text-align:center;
+  }
+  .fluxo__resumo strong{color:var(--ink);font-weight:500;}
+  .fluxo__acao{margin-top:26px;display:flex;flex-direction:column;gap:12px;align-items:center;}
+  .fluxo__acao .btn{width:100%;max-width:340px;}
+
+  .form-campo{margin-bottom:18px;text-align:left;}
+  .form-campo label{
+    display:block;
+    font-size:.68rem;font-weight:500;
+    letter-spacing:.24em;text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .form-campo input,.form-campo textarea{
+    width:100%;
+    border:1px solid var(--hairline);
+    background:#fffdf9;
+    padding:13px 15px;
+    font-family:var(--font-body);font-weight:300;
+    font-size:.95rem;color:var(--ink);
+    outline:none;
+    border-radius:0;
+    transition:border-color .2s ease;
+  }
+  .form-campo input:focus,.form-campo textarea:focus{border-color:var(--gold);}
+  .form-campo textarea{min-height:90px;resize:vertical;}
+  .form-erro{
+    color:#a3564e;
+    font-size:.78rem;
+    margin-top:6px;
+    display:none;
+  }
+  .form-campo.tem-erro input{border-color:#c98d86;}
+  .form-campo.tem-erro .form-erro{display:block;}
+  .resumo-presente{
+    display:flex;align-items:center;gap:14px;
+    border:1px solid var(--hairline);
+    background:#fffdf9;
+    padding:16px;
+    margin-bottom:24px;
+    text-align:left;
+  }
+  .resumo-presente .mimo__icon{grid-row:auto;flex-shrink:0;}
+  .resumo-presente strong{font-family:var(--font-serif);font-weight:600;font-size:1.1rem;display:block;}
+  .resumo-presente small{color:var(--ink-soft);font-size:.8rem;}
+
+  .obrigado{max-width:420px;margin:40px auto;text-align:center;}
+  .obrigado__selo{
+    width:74px;height:74px;
+    border-radius:50%;
+    border:1px solid var(--gold);
+    color:var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.8rem;
+    margin:0 auto 24px;
+  }
+  .obrigado h2{
+    font-family:var(--font-script);
+    font-weight:600;
+    font-size:2.2rem;
+    margin-bottom:12px;
+  }
+  .obrigado p{color:var(--ink-soft);font-size:.95rem;margin-bottom:28px;}
+
+  .escolha-item{
+    background:#fffdf9;
+    border:1px solid var(--hairline);
+    padding:16px;
+    display:flex;flex-direction:column;gap:6px;
+    text-align:left;
+  }
+  .escolha-item + .escolha-item{margin-top:10px;}
+  .escolha-item strong{font-family:var(--font-serif);font-weight:600;font-size:1.1rem;}
+  .escolha-item small{color:var(--ink-soft);font-size:.8rem;}
+  .escolha-item__acoes{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;}
+  .link-btn{
+    background:none;border:none;cursor:pointer;
+    font-family:var(--font-body);
+    font-size:.7rem;font-weight:500;
+    letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-soft);
+    text-decoration:underline;
+    padding:4px 0;
+  }
+  .link-btn:hover{color:var(--ink);}
+  .link-btn--vermelho{color:#a3564e;}
+
   .gifts-note{
     max-width:540px;
     margin:36px auto 0;
@@ -497,6 +750,27 @@
     <g id="ic-mobile"><path d="M5 6h14M12 3.5V6"/><path d="M8 6v4M12 6v6M16 6v3.5"/><circle cx="8" cy="11.5" r="1.5"/><circle cx="12" cy="13.5" r="1.5"/><circle cx="16" cy="11" r="1.5"/></g>
     <g id="ic-livro"><path d="M12 6c-2-1.6-5-1.6-7.5 0v12c2.5-1.6 5.5-1.6 7.5 0c2-1.6 5-1.6 7.5 0V6c-2.5-1.6-5.5-1.6-7.5 0Z"/><path d="M12 6v12"/></g>
     <g id="ic-chocalho"><circle cx="12" cy="8" r="4"/><path d="M12 12v6.5"/><circle cx="12" cy="19.8" r="1"/><circle cx="12" cy="8" r="1.2"/></g>
+    <g id="ic-banheira"><path d="M4 12h16v2a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5Z"/><path d="M6 12V6.5a2 2 0 0 1 4 0M8 19.5v1.5M16 19.5v1.5"/></g>
+    <g id="ic-luminaria"><path d="M7.5 11a4.5 4.5 0 0 1 9 0v1h-9Z"/><path d="M12 12v5M8.5 19.5h7"/></g>
+    <g id="ic-carrinho"><path d="M5 5a8 8 0 0 1 8 8H5Z"/><path d="M13 13h3l2.5-5M6 13l-1 4.5M13 13l1.5 4.5"/><circle cx="6.5" cy="19.5" r="1.6"/><circle cx="15.5" cy="19.5" r="1.6"/></g>
+    <g id="ic-bola"><circle cx="12" cy="12" r="7"/><path d="M5.8 9.2a13 13 0 0 1 12.4 0M5.8 14.8a13 13 0 0 0 12.4 0"/></g>
+    <g id="ic-cubos"><rect x="4.5" y="10.5" width="7.5" height="7.5" rx="1"/><rect x="12.5" y="5" width="7" height="7" rx="1"/><circle cx="8.2" cy="14.2" r=".4"/><circle cx="16" cy="8.5" r=".4"/></g>
+    <g id="ic-cesto"><path d="M5 10h14l-1.5 9.5h-11Z"/><path d="M8.5 10a3.5 3.5 0 0 1 7 0M5.8 13.5h12.4"/></g>
+    <g id="ic-colher"><ellipse cx="12" cy="7" rx="2.7" ry="3.6"/><path d="M12 10.5V20"/></g>
+    <g id="ic-copo"><rect x="8" y="8" width="8" height="11" rx="2"/><path d="M7 8h10M11 8V5.5h2V8M8 12H5.8a1.6 1.6 0 0 0 0 3.2H8M16 12h2.2a1.6 1.6 0 0 1 0 3.2H16"/></g>
+    <g id="ic-chapeu"><path d="M8 12v-1a4 4 0 0 1 8 0v1"/><ellipse cx="12" cy="13" rx="8" ry="2.4"/></g>
+    <g id="ic-musica"><rect x="4.5" y="10" width="13" height="9" rx="2"/><path d="M17.5 4.5v5"/><circle cx="16" cy="9.8" r="1.4"/><path d="M17.5 4.5l2.5 1"/></g>
+    <g id="ic-espelho"><ellipse cx="12" cy="10" rx="5" ry="6"/><path d="M12 16v4M9 20h6"/></g>
+    <g id="ic-vento"><path d="M4 8.5h8.5a2.4 2.4 0 1 0-2.4-2.4M4 12.5h12.5a2.4 2.4 0 1 1-2.4 2.4M4 16.5h6"/></g>
+    <g id="ic-sol"><circle cx="12" cy="12" r="3.6"/><path d="M12 4.5V6M12 18v1.5M4.5 12H6M18 12h1.5M6.7 6.7l1 1M16.3 16.3l1 1M17.3 6.7l-1 1M7.7 16.3l-1 1"/></g>
+    <g id="ic-guarda"><path d="M4 12a8 8 0 0 1 16 0Z"/><path d="M12 12v5.5a1.8 1.8 0 0 0 3.6 0"/></g>
+    <g id="ic-lua"><path d="M14.5 4.5a7.5 7.5 0 1 0 5 12.5 8.5 8.5 0 0 1-5-12.5Z"/></g>
+    <g id="ic-lixeira"><rect x="7" y="8" width="10" height="12" rx="2"/><path d="M5.5 8h13M10 5.5h4M12 11.5v5.5"/></g>
+    <g id="ic-cabide"><path d="M12 8.5a1.9 1.9 0 1 1 1.9-1.9"/><path d="M12 8.5v1.5L4.5 16h15Z"/></g>
+    <g id="ic-garrafa"><rect x="9" y="6.5" width="6" height="13.5" rx="2.5"/><rect x="10" y="3.5" width="4" height="3" rx="1"/></g>
+    <g id="ic-pote"><path d="M6 12.5h12v1.5a6 6 0 0 1-12 0Z"/><path d="M6 12.5a6 2.2 0 0 1 12 0"/></g>
+    <g id="ic-aneis"><ellipse cx="12" cy="7.5" rx="3" ry="1.5"/><ellipse cx="12" cy="12" rx="5" ry="1.7"/><ellipse cx="12" cy="16.5" rx="7" ry="1.9"/></g>
+    <g id="ic-tapete"><rect x="4" y="12" width="16" height="6" rx="2"/><path d="M7 12a6.5 6.5 0 0 1 10 0M12 7.5v2"/><circle cx="12" cy="6.5" r="1"/></g>
   </defs>
 </svg>
 
@@ -591,7 +865,7 @@
       <div class="gift-actions reveal">
         <button class="btn btn--solid" type="button" id="abrir-lista">Ver lista de presentes</button>
       </div>
-      <p class="gifts-note reveal">Ao escolher, é só confirmar pelo WhatsApp. O que importa mesmo é a sua presença.</p>
+      <p class="gifts-note reveal">Sua escolha fica registrada aqui mesmo no site. O que importa mesmo é a sua presença.</p>
     </div>
   </section>
 
@@ -622,19 +896,14 @@
   </section>
 </main>
 
-<div class="gmodal" id="gmodal" hidden>
-  <div class="gmodal__backdrop" data-close></div>
-  <div class="gmodal__panel" role="dialog" aria-modal="true" aria-labelledby="gmodal-titulo">
-    <div class="gmodal__head">
-      <div>
-        <p class="gmodal__title" id="gmodal-titulo">Lista de presentes</p>
-        <p class="gmodal__sub" id="gmodal-sub">Toque em &ldquo;Escolher&rdquo; e confirme pelo WhatsApp.</p>
-      </div>
-      <button class="gmodal__close" type="button" data-close aria-label="Fechar lista">&#10005;</button>
-    </div>
-    <div class="gmodal__body" id="gmodal-body"></div>
-  </div>
-</div>
+<section class="shop" id="mimos" hidden>
+  <header class="shop__top">
+    <button class="shop__back" id="shop-voltar" type="button" aria-label="Voltar">&#8592;</button>
+    <p class="shop__title">Cantinho dos Mimos</p>
+    <button class="shop__mine" id="shop-minhas" type="button">Minhas escolhas<span class="shop__badge" id="shop-badge" hidden></span></button>
+  </header>
+  <div class="shop__body" id="shop-body"></div>
+</section>
 
 <footer class="footer">
   <p class="footer__names">
@@ -711,123 +980,433 @@
     if (salvo && frases[salvo]) escolher(salvo, false);
   } catch(e) {}
 
-  // ===== Lista de presentes =====
-  const WHATS = 'https://wa.me/818058298903';
-  const grupos = [
-    { nome: 'Fraldas', itens: [
-      { nome: 'Fralda RN', cotas: 4, icone: 'ic-fralda' },
-      { nome: 'Fralda P', cotas: 8, icone: 'ic-fralda' },
-      { nome: 'Fralda M', cotas: 12, icone: 'ic-fralda' },
-      { nome: 'Fralda G', cotas: 12, icone: 'ic-fralda' },
-      { nome: 'Fralda XG', cotas: 6, icone: 'ic-fralda' }
-    ]},
-    { nome: 'Higiene e cuidados', itens: [
-      { nome: 'Lenços umedecidos', cotas: 8, nota: 'kit com 3 ou mais', icone: 'ic-lencos' },
-      { nome: 'Pomada para assaduras', cotas: 4, icone: 'ic-tubo' },
-      { nome: 'Sabonete líquido de bebê', cotas: 3, nota: 'neutro', icone: 'ic-frasco' },
-      { nome: 'Shampoo e condicionador de bebê', cotas: 2, icone: 'ic-frasco' },
-      { nome: 'Algodão e hastes de bebê', cotas: 2, icone: 'ic-algodao' },
-      { nome: 'Água de colônia de bebê', cotas: 1, icone: 'ic-colonia' },
-      { nome: 'Kit higiene', cotas: 1, nota: 'escova, pente e tesourinha', icone: 'ic-tesoura' },
-      { nome: 'Aspirador nasal', cotas: 1, icone: 'ic-aspirador' },
-      { nome: 'Termômetro digital', cotas: 1, icone: 'ic-termometro' }
-    ]},
-    { nome: 'Roupinhas e enxoval', itens: [
-      { nome: 'Kit bodies RN', cotas: 2, nota: 'cores neutras', icone: 'ic-body' },
-      { nome: 'Kit bodies P', cotas: 2, nota: 'cores neutras', icone: 'ic-body' },
-      { nome: 'Kit bodies M', cotas: 2, nota: 'cores neutras', icone: 'ic-body' },
-      { nome: 'Macacão RN/P', cotas: 2, nota: 'cores neutras', icone: 'ic-body' },
-      { nome: 'Mijão / culote', cotas: 2, nota: 'cores neutras', icone: 'ic-calca' },
-      { nome: 'Meias e luvinhas', cotas: 2, icone: 'ic-meia' },
-      { nome: 'Babadores', cotas: 2, icone: 'ic-babador' },
-      { nome: 'Fraldas de boca', cotas: 2, icone: 'ic-toalha' },
-      { nome: 'Toalha de banho com capuz', cotas: 2, icone: 'ic-toalha' },
-      { nome: 'Manta de algodão', cotas: 2, nota: 'tom neutro', icone: 'ic-toalha' },
-      { nome: 'Lençol de berço', cotas: 2, icone: 'ic-toalha' },
-      { nome: 'Saída de banho', cotas: 1, icone: 'ic-casaco' },
-      { nome: 'Casaquinho de linha', cotas: 1, icone: 'ic-casaco' },
-      { nome: 'Touca / gorro', cotas: 1, icone: 'ic-touca' }
-    ]},
-    { nome: 'Mimos e utilidades', itens: [
-      { nome: 'Naninha', cotas: 1, icone: 'ic-urso' },
-      { nome: 'Chupeta', cotas: 1, icone: 'ic-chupeta' },
-      { nome: 'Porta-chupeta', cotas: 1, icone: 'ic-chupeta' },
-      { nome: 'Mamadeira', cotas: 1, icone: 'ic-mamadeira' },
-      { nome: 'Escova de lavar mamadeira', cotas: 1, icone: 'ic-escova' },
-      { nome: 'Trocador portátil', cotas: 1, icone: 'ic-trocador' },
-      { nome: 'Bolsa térmica de bebê', cotas: 1, icone: 'ic-bolsa' },
-      { nome: 'Móbile de berço', cotas: 1, icone: 'ic-mobile' },
-      { nome: 'Livrinho de banho', cotas: 1, icone: 'ic-livro' },
-      { nome: 'Chocalho', cotas: 1, icone: 'ic-chocalho' }
-    ]}
+  // ===== Cantinho dos Mimos =====
+  const CATS = [
+    { id: 'fraldas',     nome: 'Fraldas',     icone: 'ic-fralda',    cor: '#ece3d2' },
+    { id: 'higiene',     nome: 'Higiene',     icone: 'ic-frasco',    cor: '#e5e2dc' },
+    { id: 'banho',       nome: 'Banho',       icone: 'ic-banheira',  cor: '#dbe3d2' },
+    { id: 'roupinhas',   nome: 'Roupinhas',   icone: 'ic-body',      cor: '#f2e8cd' },
+    { id: 'alimentacao', nome: 'Alimentação', icone: 'ic-mamadeira', cor: '#e6d9c8' },
+    { id: 'quarto',      nome: 'Quarto',      icone: 'ic-luminaria', cor: '#ece3d2' },
+    { id: 'passeio',     nome: 'Passeio',     icone: 'ic-carrinho',  cor: '#dbe3d2' },
+    { id: 'brinquedos',  nome: 'Brinquedos',  icone: 'ic-urso',      cor: '#f2e8cd' }
   ];
-  const slug = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-');
-  const catalogo = [];
-  grupos.forEach(g => {
-    g.presentes = [];
-    g.itens.forEach(item => {
-      for (let c = 1; c <= item.cotas; c++) {
-        const p = {
-          id: slug(item.nome) + (item.cotas > 1 ? '-' + c : ''),
-          nome: item.nome,
-          icone: item.icone,
-          nota: item.cotas > 1 ? 'cota ' + c + ' de ' + item.cotas : (item.nota || ''),
-          notaExtra: item.cotas > 1 ? (item.nota || '') : ''
-        };
-        g.presentes.push(p);
-        catalogo.push(p);
-      }
+  // [id, nome, descrição, categoria, faixa de preço (¥), ícone]
+  const ITENS = [
+    ['fr-fraldas','Pacote de fraldas','Monte do seu jeito: tamanho, marca e quantidade.','fraldas','','ic-fralda'],
+    ['fr-lencos8','Lenços umedecidos (leve 8)','Caixa com vários pacotes — Merries ou Moony.','fraldas','¥600–1.000','ic-lencos'],
+    ['fr-refil','Refil de lenços umedecidos','Pacotes de reposição, sempre bem-vindos.','fraldas','¥300–600','ic-lencos'],
+    ['fr-bos','Saquinhos para fraldas usadas','BOS anti-odor, rolinho prático.','fraldas','¥300–500','ic-lixeira'],
+    ['fr-lixeira','Lixeira anti-odor','Combi Poitech ou similar.','fraldas','¥2.500–3.500','ic-lixeira'],
+    ['fr-cartucho','Refil da lixeira','Cartucho de reposição.','fraldas','¥800–1.200','ic-lixeira'],
+    ['fr-trocador','Trocador portátil','Dobrável, para os passeios.','fraldas','¥1.500–2.500','ic-trocador'],
+    ['fr-tapete','Tapete de troca impermeável','Para usar em casa.','fraldas','¥1.000–1.800','ic-trocador'],
+    ['fr-organizador','Organizador de fraldas','Cesto com divisórias para o quarto.','fraldas','¥1.500–2.500','ic-cesto'],
+    ['fr-pomada','Pomada de assadura','Pigeon ou Polibaby, tubo grande.','fraldas','¥800–1.200','ic-tubo'],
+    ['fr-drywipes','Toalhinhas secas de algodão','Dry wipes multiuso, suaves.','fraldas','¥400–700','ic-algodao'],
+    ['fr-porta','Porta-lenços com tampa','Mantém os lenços sempre úmidos.','fraldas','¥600–1.000','ic-lencos'],
+    ['fr-natacao','Fralda de natação','Moony água, estampa neutra.','fraldas','¥800–1.200','ic-fralda'],
+    ['fr-kitviagem','Kit de troca para viagem','Nécessaire compacta para a bolsa.','fraldas','¥1.500–2.500','ic-bolsa'],
+    ['fr-pano','Fraldas de pano (kit)','Algodão em tons neutros.','fraldas','¥2.000–3.000','ic-toalha'],
+
+    ['hi-sabonete','Sabonete líquido de bebê','Arau Baby ou Pigeon, espuma suave.','higiene','¥400–700','ic-frasco'],
+    ['hi-shampoo','Shampoo suave','Fácil de enxaguar, sem lágrimas.','higiene','¥400–800','ic-frasco'],
+    ['hi-locao','Loção hidratante','Momo no Ha, folha de pêssego.','higiene','¥700–1.100','ic-frasco'],
+    ['hi-oleo','Óleo de massagem baby','Para a pele e o carinho.','higiene','¥600–1.000','ic-colonia'],
+    ['hi-algodao','Algodão de maternidade','Quadradinhos macios.','higiene','¥300–500','ic-algodao'],
+    ['hi-hastes','Hastes flexíveis de bebê','Com trava de segurança.','higiene','¥200–400','ic-algodao'],
+    ['hi-gaze','Gaze esterilizada','Multiuso, indispensável.','higiene','¥300–600','ic-toalha'],
+    ['hi-unha','Cortador de unhas baby','Pigeon, tesourinha com ponta redonda.','higiene','¥800–1.300','ic-tesoura'],
+    ['hi-escova','Kit escova e pente macios','Cerdas delicadas.','higiene','¥800–1.400','ic-escova'],
+    ['hi-termometro','Termômetro digital','Medição rápida e silenciosa.','higiene','¥1.200–2.500','ic-termometro'],
+    ['hi-aspirador','Aspirador nasal','Pigeon ou ChuChu, manual.','higiene','¥1.500–2.500','ic-aspirador'],
+    ['hi-sabao','Sabão para roupas de bebê','Arau ou Sarasa, sem perfume forte.','higiene','¥400–700','ic-frasco'],
+    ['hi-solar','Protetor solar baby','Suave, fácil de remover.','higiene','¥800–1.500','ic-sol'],
+    ['hi-creme','Creme multiuso','Proteção diária para as bochechas.','higiene','¥500–900','ic-tubo'],
+    ['hi-kit','Kit higiene completo','Escova, pente e tesourinha.','higiene','¥1.000–1.800','ic-tesoura'],
+
+    ['ba-banheira','Banheira dobrável','Richell, fácil de guardar.','banho','¥2.500–4.000','ic-banheira'],
+    ['ba-apoio','Apoio de banho','Cadeirinha reclinada para a banheira.','banho','¥2.000–3.500','ic-banheira'],
+    ['ba-termometro','Termômetro de banho','Para a água na temperatura certa.','banho','¥800–1.500','ic-termometro'],
+    ['ba-toalha','Toalha com capuz','Algodão, tom cru.','banho','¥1.500–3.000','ic-toalha'],
+    ['ba-toalhinhas','Toalhinhas de rosto (kit)','Gaze macia, várias unidades.','banho','¥500–1.000','ic-toalha'],
+    ['ba-esponja','Esponja natural macia','Delicada com a pele.','banho','¥300–600','ic-algodao'],
+    ['ba-copinho','Copinho de enxágue','Não deixa entrar água nos olhos.','banho','¥400–800','ic-copo'],
+    ['ba-roupao','Roupão saída de banho','Unissex, bege.','banho','¥2.000–3.500','ic-casaco'],
+    ['ba-tapete','Tapete antiderrapante','Segurança na hora do banho.','banho','¥800–1.500','ic-tapete'],
+    ['ba-regador','Regador de banho','Madeira ou tons neutros, diverte e enxagua.','banho','¥500–1.000','ic-copo'],
+
+    ['ro-bodycurto','Kit bodies manga curta','Uniqlo ou MUJI, tom cru.','roupinhas','¥1.000–2.000','ic-body'],
+    ['ro-bodylongo','Kit bodies manga longa','Algodão macio, cores neutras.','roupinhas','¥1.000–2.000','ic-body'],
+    ['ro-macacao','Macacão de algodão','Tom sálvia ou bege.','roupinhas','¥1.500–2.500','ic-body'],
+    ['ro-pijama','Pijama romper','Algodão orgânico.','roupinhas','¥1.500–2.800','ic-body'],
+    ['ro-conjunto','Conjuntinho 2 peças','Neutro e fofo.','roupinhas','¥1.500–2.500','ic-casaco'],
+    ['ro-mijao','Calça mijão (kit 2)','Cintura suave, sem apertar.','roupinhas','¥1.000–1.800','ic-calca'],
+    ['ro-meias','Meias (kit 3 pares)','Tamanho recém-nascido.','roupinhas','¥500–900','ic-meia'],
+    ['ro-luvinhas','Luvinhas anti-arranhão','Algodão fininho.','roupinhas','¥300–600','ic-meia'],
+    ['ro-touca','Touca de algodão','Para os primeiros passeios.','roupinhas','¥500–900','ic-touca'],
+    ['ro-chapeu','Chapéu de sol','Com proteção de nuca.','roupinhas','¥800–1.500','ic-chapeu'],
+    ['ro-babadores','Babadores (kit 3)','Tons neutros.','roupinhas','¥800–1.500','ic-babador'],
+    ['ro-fraldaboca','Fraldas de boca (kit)','Gaze dupla, macias.','roupinhas','¥600–1.000','ic-toalha'],
+    ['ro-casaquinho','Casaquinho de linha','Creme, feito para durar.','roupinhas','¥1.500–3.000','ic-casaco'],
+    ['ro-manta','Manta de algodão','Leve e quentinha.','roupinhas','¥1.500–3.000','ic-toalha'],
+    ['ro-sleeper','Saco de dormir (sleeper)','Sono seguro no berço.','roupinhas','¥2.000–3.500','ic-lua'],
+
+    ['al-mamadeira','Mamadeira Pigeon','Bico natural, vidro ou plástico.','alimentacao','¥1.200–2.000','ic-mamadeira'],
+    ['al-bicos','Bicos de reposição','Pigeon, fase recém-nascido.','alimentacao','¥600–1.000','ic-chupeta'],
+    ['al-escova','Escova de mamadeira','Com esponja para o bico.','alimentacao','¥300–600','ic-escova'],
+    ['al-detergente','Detergente para mamadeira','Combi ou Pigeon, uso diário.','alimentacao','¥300–600','ic-frasco'],
+    ['al-esterilizador','Saco esterilizador','Esteriliza no micro-ondas.','alimentacao','¥800–1.400','ic-pote'],
+    ['al-babador','Babador de silicone','Com cata-migalhas.','alimentacao','¥800–1.500','ic-babador'],
+    ['al-colheres','Kit colheres de silicone','Richell, pontas macias.','alimentacao','¥500–1.000','ic-colher'],
+    ['al-copo','Copo de treinamento','Combi step-up, com alças.','alimentacao','¥800–1.500','ic-copo'],
+    ['al-potinhos','Potinhos para papinha','Empilháveis, com tampa.','alimentacao','¥800–1.300','ic-pote'],
+    ['al-garrafa','Garrafa térmica','Água quente para o leite nos passeios.','alimentacao','¥2.000–3.500','ic-garrafa'],
+
+    ['qu-lencol','Lençol de berço','Algodão cru.','quarto','¥1.000–2.000','ic-toalha'],
+    ['qu-protetor','Protetor de colchão','Impermeável e silencioso.','quarto','¥1.000–1.800','ic-toalha'],
+    ['qu-cobertor','Cobertor de berço','Tom sálvia.','quarto','¥1.500–3.000','ic-lua'],
+    ['qu-luminaria','Luminária noturna','Luz quente regulável.','quarto','¥1.500–2.800','ic-luminaria'],
+    ['qu-mobile','Móbile de berço','Tons terrosos, gira devagarinho.','quarto','¥1.500–3.000','ic-mobile'],
+    ['qu-cesto','Cesto organizador','Palha ou algodão.','quarto','¥800–1.500','ic-cesto'],
+    ['qu-cabides','Cabides de bebê (kit 10)','Tamanho mini.','quarto','¥300–600','ic-cabide'],
+    ['qu-almofada','Almofada de amamentação','Conforto para os dois.','quarto','¥1.500–3.000','ic-lua'],
+    ['qu-travesseiro','Travesseiro donut','Acolhe a cabecinha.','quarto','¥1.000–2.000','ic-lua'],
+    ['qu-umidificador','Umidificador compacto','Para o inverno seco do Japão.','quarto','¥2.000–3.500','ic-vento'],
+
+    ['pa-bolsa','Bolsa de passeio','Mother bag compacta, tom neutro.','passeio','¥2.000–3.500','ic-bolsa'],
+    ['pa-manta','Manta para carrinho','Não voa com o vento.','passeio','¥1.500–2.500','ic-toalha'],
+    ['pa-sol','Protetor de sol para carrinho','Tela leve, dobrável.','passeio','¥1.000–2.000','ic-sol'],
+    ['pa-mosquiteiro','Mosquiteiro de carrinho','Verão tranquilo.','passeio','¥800–1.500','ic-carrinho'],
+    ['pa-chuva','Capa de chuva de carrinho','Época das chuvas sem susto.','passeio','¥1.000–1.800','ic-guarda'],
+    ['pa-ganchos','Ganchos para carrinho','Pendura as sacolinhas.','passeio','¥500–900','ic-carrinho'],
+    ['pa-organizador','Organizador de carrinho','Porta-copo e celular.','passeio','¥1.000–2.000','ic-carrinho'],
+    ['pa-ventilador','Ventilador portátil','Para o verão japonês.','passeio','¥1.500–2.500','ic-vento'],
+    ['pa-espelho','Espelho para o carro','Bebê sempre à vista.','passeio','¥1.000–1.800','ic-espelho'],
+    ['pa-lencinhos','Lencinhos de bolso (kit)','Sempre na bolsa.','passeio','¥300–500','ic-lencos'],
+
+    ['br-chocalho','Chocalho de madeira','Toque suave, som delicado.','brinquedos','¥500–1.000','ic-chocalho'],
+    ['br-mordedor','Mordedor de banana','Clássico japonês para a dentição.','brinquedos','¥500–800','ic-chocalho'],
+    ['br-naninha','Naninha','Tecido macio, tom cru.','brinquedos','¥1.000–2.000','ic-urso'],
+    ['br-urso','Ursinho de pelúcia','O primeiro amigo.','brinquedos','¥1.000–2.500','ic-urso'],
+    ['br-livropano','Livrinho de pano','Texturas para descobrir.','brinquedos','¥800–1.500','ic-livro'],
+    ['br-livrobanho','Livrinho de banho','Histórias na banheira.','brinquedos','¥500–1.000','ic-livro'],
+    ['br-bola','Bola de tecido','Leve e fácil de segurar.','brinquedos','¥800–1.500','ic-bola'],
+    ['br-cubos','Cubos macios','Empilhar e derrubar.','brinquedos','¥1.000–2.000','ic-cubos'],
+    ['br-aneis','Anéis de empilhar','Madeira ou tecido.','brinquedos','¥1.000–2.000','ic-aneis'],
+    ['br-pulso','Chocalho de pulso (par)','Chacoalha junto com o bebê.','brinquedos','¥500–900','ic-chocalho'],
+    ['br-mobileviagem','Móbile de viagem','Prende no bebê conforto.','brinquedos','¥800–1.500','ic-mobile'],
+    ['br-musica','Caixinha de música','Canção de ninar.','brinquedos','¥1.500–3.000','ic-musica'],
+    ['br-tapete','Tapete de atividades','Um mundinho para explorar.','brinquedos','¥2.500–4.500','ic-tapete'],
+    ['br-espelho','Espelho de brincar','Seguro para bebês.','brinquedos','¥800–1.500','ic-espelho'],
+    ['br-mimopais','Kit mimo dos papais','Chá e docinho para Victor & Paula.','brinquedos','¥1.000–2.000','ic-colonia']
+  ].map(a => ({ id: a[0], nome: a[1], desc: a[2], cat: a[3], preco: a[4], icone: a[5] }));
+
+  const TAMANHOS = ['新生児 / Recém-nascido', 'S', 'M', 'L', 'Big'];
+  const MARCAS = ['Merries', 'Moony', 'Pampers Japão', 'Genki!', 'GOO.N', 'Sem preferência'];
+  const LOTE = 24;
+
+  const shopEl = document.getElementById('mimos');
+  const shopBody = document.getElementById('shop-body');
+  const shopBadge = document.getElementById('shop-badge');
+  let pendente = null;     // presente aguardando confirmação
+  let ultimaEscolha = null;
+  let fralda = { tam: null, marca: 'Sem preferência', qtd: 1 };
+  let buscaTexto = '';
+  let mostrando = LOTE;
+
+  // --- armazenamento (trocar por API quando houver backend) ---
+  const lerEscolhas = () => {
+    try { return JSON.parse(localStorage.getItem('mimos-escolhas') || '[]'); }
+    catch(e) { return []; }
+  };
+  const gravarEscolhas = (arr) => {
+    try { localStorage.setItem('mimos-escolhas', JSON.stringify(arr)); } catch(e) {}
+  };
+  const idsTomados = () => new Set(lerEscolhas().map(e => e.id));
+
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  function atualizarBadge(){
+    const n = lerEscolhas().length;
+    shopBadge.hidden = n === 0;
+    shopBadge.textContent = n;
+  }
+
+  // --- blocos reutilizáveis ---
+  function htmlBusca(){
+    return '<div class="shop-busca"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>' +
+      '<input type="search" id="shop-q" placeholder="Buscar presente..." value="' + esc(buscaTexto) + '" autocomplete="off"></div>';
+  }
+  function htmlChips(ativa){
+    let h = '<div class="shop-chips">';
+    h += '<button class="chip' + (ativa === 'todos' ? ' is-ativa' : '') + '" data-cat="todos" type="button">Todos</button>';
+    CATS.forEach(c => {
+      h += '<button class="chip' + (ativa === c.id ? ' is-ativa' : '') + '" data-cat="' + c.id + '" type="button">' + c.nome + '</button>';
     });
+    return h + '</div>';
+  }
+  function htmlMimo(p, tomados){
+    const tomado = tomados.has(p.id);
+    const especial = p.id === 'fr-fraldas';
+    return '<div class="mimo' + (tomado ? ' mimo--escolhido' : '') + '">' +
+      '<span class="mimo__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#' + p.icone + '"/></svg></span>' +
+      '<span class="mimo__nome">' + esc(p.nome) + '</span>' +
+      '<button class="mimo__btn" type="button" data-escolher="' + p.id + '"' + (tomado ? ' disabled' : '') + '>' +
+        (tomado ? 'Escolhido' : (especial ? 'Montar' : 'Escolher')) + '</button>' +
+      '<span class="mimo__desc">' + esc(p.desc) + '</span>' +
+      '<span class="mimo__meta">' +
+        (p.preco ? '<span class="mimo__preco">' + p.preco + '</span>' : '') +
+        '<span class="mimo__status ' + (tomado ? 'mimo__status--escolhido' : 'mimo__status--livre') + '">' + (tomado ? 'Escolhido' : 'Disponível') + '</span>' +
+      '</span></div>';
+  }
+
+  // --- telas ---
+  function telaHome(){
+    let h = '<div class="shop-intro"><p>Escolha uma fralda e, se desejar, um pequeno presente para o bebê. Tudo foi pensado com carinho e em opções fáceis de encontrar no Japão.</p></div>';
+    h += htmlBusca();
+    h += htmlChips(null);
+    h += '<div id="shop-resultado">';
+    h += '<div class="cat-grid">';
+    CATS.forEach(c => {
+      const qtd = ITENS.filter(p => p.cat === c.id).length;
+      h += '<button class="cat-card" data-cat="' + c.id + '" type="button">' +
+        '<span class="cat-card__icon" style="background:' + c.cor + '"><svg viewBox="0 0 24 24"><use href="#' + c.icone + '"/></svg></span>' +
+        '<span class="cat-card__nome">' + c.nome + '</span>' +
+        '<span class="cat-card__qtd">' + qtd + ' mimos</span></button>';
+    });
+    h += '</div></div>';
+    shopBody.innerHTML = h;
+  }
+
+  function telaLista(catId){
+    const cat = CATS.find(c => c.id === catId);
+    const titulo = catId === 'todos' ? 'Todos os mimos' : (cat ? cat.nome : '');
+    let itens = catId === 'todos' ? ITENS : ITENS.filter(p => p.cat === catId);
+    let h = htmlBusca() + htmlChips(catId);
+    h += '<h3 class="shop-secao">' + titulo + '</h3>';
+    h += '<div id="shop-resultado">' + htmlListaItens(itens) + '</div>';
+    shopBody.innerHTML = h;
+  }
+
+  function htmlListaItens(itens){
+    const tomados = idsTomados();
+    if (!itens.length) return '<p class="shop-vazio">Nenhum mimo encontrado por aqui... tente outra palavra.</p>';
+    const visiveis = itens.slice(0, mostrando);
+    let h = '<div class="mimo-lista">';
+    visiveis.forEach(p => { h += htmlMimo(p, tomados); });
+    h += '</div>';
+    if (itens.length > mostrando) {
+      h += '<div class="ver-mais"><button class="btn" type="button" data-vermais>Ver mais (' + (itens.length - mostrando) + ')</button></div>';
+    }
+    return h;
+  }
+
+  function telaFraldas(){
+    let h = '<h3 class="shop-secao">Presente de fraldas</h3><div class="fluxo">';
+    h += '<span class="fluxo__label">1 · Escolha o tamanho</span><div class="pills" data-grupo="tam">';
+    TAMANHOS.forEach(t => {
+      h += '<button class="pill' + (fralda.tam === t ? ' is-ativa' : '') + '" data-tam="' + esc(t) + '" type="button">' + esc(t) + '</button>';
+    });
+    h += '</div>';
+    h += '<span class="fluxo__label">2 · Marca (opcional)</span><div class="pills" data-grupo="marca">';
+    MARCAS.forEach(m => {
+      h += '<button class="pill' + (fralda.marca === m ? ' is-ativa' : '') + '" data-marca="' + esc(m) + '" type="button">' + esc(m) + '</button>';
+    });
+    h += '</div>';
+    h += '<span class="fluxo__label">3 · Quantidade de pacotes</span>';
+    h += '<div class="stepper"><button type="button" data-qtd="-1"' + (fralda.qtd <= 1 ? ' disabled' : '') + '>&#8722;</button><span>' + fralda.qtd + '</span><button type="button" data-qtd="1"' + (fralda.qtd >= 6 ? ' disabled' : '') + '>+</button></div>';
+    h += '<div class="fluxo__resumo">' + (fralda.tam
+      ? 'Você vai presentear com <strong>' + fralda.qtd + ' pacote' + (fralda.qtd > 1 ? 's' : '') + '</strong> de fraldas <strong>' + esc(fralda.tam) + '</strong> · <strong>' + esc(fralda.marca) + '</strong>'
+      : 'Escolha um tamanho para continuar') + '</div>';
+    h += '<div class="fluxo__acao"><button class="btn btn--solid" type="button" data-fralda-ok' + (fralda.tam ? '' : ' disabled') + '>Continuar</button></div>';
+    h += '</div>';
+    shopBody.innerHTML = h;
+  }
+
+  function telaConfirmar(){
+    if (!pendente) { location.hash = '#mimos'; return; }
+    let h = '<h3 class="shop-secao">Confirmar presente</h3><div class="fluxo">';
+    h += '<div class="resumo-presente">' +
+      '<span class="mimo__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#' + pendente.icone + '"/></svg></span>' +
+      '<span><strong>' + esc(pendente.rotulo) + '</strong>' + (pendente.preco ? '<small>' + pendente.preco + '</small>' : '') + '</span></div>';
+    h += '<form id="form-confirma" novalidate>';
+    h += '<div class="form-campo" id="campo-nome"><label for="f-nome">Seu nome *</label><input id="f-nome" type="text" autocomplete="name"><p class="form-erro">Conte para a gente quem está presenteando.</p></div>';
+    h += '<div class="form-campo" id="campo-tel"><label for="f-tel">Telefone *</label><input id="f-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="090-0000-0000"><p class="form-erro">Deixe um telefone para conseguirmos falar com você.</p></div>';
+    h += '<div class="form-campo"><label for="f-msg">Mensagem para os papais (opcional)</label><textarea id="f-msg" maxlength="300"></textarea></div>';
+    h += '<div class="fluxo__acao"><button class="btn btn--solid" type="submit">Confirmar presente</button>' +
+      '<button class="link-btn" type="button" data-voltar-lista>Voltar e escolher outro</button></div>';
+    h += '</form></div>';
+    shopBody.innerHTML = h;
+  }
+
+  function telaObrigado(){
+    if (!ultimaEscolha) { location.hash = '#mimos'; return; }
+    shopBody.innerHTML = '<div class="obrigado">' +
+      '<div class="obrigado__selo">&#10003;</div>' +
+      '<h2>Muito obrigado!</h2>' +
+      '<p>Seu presente <strong>' + esc(ultimaEscolha.rotulo) + '</strong> foi registrado com carinho. Mal podemos esperar para te ver no dia 29 de agosto!</p>' +
+      '<div class="fluxo__acao"><button class="btn" type="button" data-ir-minhas>Ver minhas escolhas</button>' +
+      '<button class="link-btn" type="button" data-ir-home>Voltar ao Cantinho dos Mimos</button></div></div>';
+  }
+
+  function telaMinhas(){
+    const escolhas = lerEscolhas();
+    let h = '<h3 class="shop-secao">Minhas escolhas</h3>';
+    if (!escolhas.length) {
+      h += '<p class="shop-vazio">Você ainda não escolheu nenhum mimo. Que tal dar uma olhadinha?</p>' +
+        '<div class="fluxo__acao"><button class="btn" type="button" data-ir-home>Ver os mimos</button></div>';
+    } else {
+      escolhas.forEach((e2, i) => {
+        h += '<div class="escolha-item" data-idx="' + i + '">' +
+          '<strong>' + esc(e2.rotulo) + '</strong>' +
+          '<small>' + esc(e2.nome) + ' · ' + esc(e2.tel) + (e2.msg ? ' · “' + esc(e2.msg) + '”' : '') + '</small>' +
+          '<div class="escolha-item__acoes" data-acoes>' +
+            '<button class="link-btn link-btn--vermelho" type="button" data-cancelar="' + i + '">Cancelar escolha</button>' +
+          '</div></div>';
+      });
+    }
+    shopBody.innerHTML = h;
+  }
+
+  // --- roteador ---
+  function rota(){
+    const h = location.hash;
+    if (!h.startsWith('#mimos')) {
+      shopEl.hidden = true;
+      document.body.classList.remove('shop-aberta');
+      return;
+    }
+    shopEl.hidden = false;
+    document.body.classList.add('shop-aberta');
+    atualizarBadge();
+    const partes = h.split('/');
+    if (h === '#mimos') { buscaTexto = ''; mostrando = LOTE; telaHome(); }
+    else if (partes[1] === 'cat') { mostrando = LOTE; telaLista(partes[2] || 'todos'); }
+    else if (partes[1] === 'fraldas') telaFraldas();
+    else if (partes[1] === 'confirmar') telaConfirmar();
+    else if (partes[1] === 'obrigado') telaObrigado();
+    else if (partes[1] === 'minhas') telaMinhas();
+    else telaHome();
+    shopEl.scrollTop = 0;
+  }
+  window.addEventListener('hashchange', rota);
+
+  // --- ações ---
+  document.getElementById('abrir-lista').addEventListener('click', () => { location.hash = '#mimos'; });
+  document.getElementById('shop-minhas').addEventListener('click', () => { location.hash = '#mimos/minhas'; });
+  document.getElementById('shop-voltar').addEventListener('click', () => {
+    if (location.hash === '#mimos') {
+      history.length > 1 ? history.back() : (location.hash = '');
+    } else {
+      location.hash = '#mimos';
+    }
   });
 
-  const gmodal = document.getElementById('gmodal');
-  const gbody = document.getElementById('gmodal-body');
-  function renderLista(){
-    gbody.innerHTML = '';
-    grupos.forEach(g => {
-      const sec = document.createElement('div');
-      sec.className = 'ggroup';
-      sec.innerHTML = '<h3 class="ggroup__name">' + g.nome + '</h3>';
-      const grid = document.createElement('div');
-      grid.className = 'ggrid';
-      g.presentes.forEach(p => {
-        const nota = [p.nota, p.notaExtra].filter(Boolean).join(' · ');
-        const card = document.createElement('div');
-        card.className = 'gift-card';
-        card.innerHTML =
-          '<span class="gift-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#' + p.icone + '"/></svg></span>' +
-          '<span class="gift-card__name">' + p.nome + '</span>' +
-          '<span class="gift-card__note">' + (nota || '&nbsp;') + '</span>' +
-          '<button class="gift-card__btn" type="button" data-id="' + p.id + '">Escolher</button>';
-        grid.appendChild(card);
+  function iniciarEscolha(p){
+    pendente = p;
+    location.hash = '#mimos/confirmar';
+  }
+
+  shopBody.addEventListener('click', (e) => {
+    const cat = e.target.closest('[data-cat]');
+    if (cat) {
+      const id = cat.dataset.cat;
+      location.hash = id === 'fraldas' && cat.classList.contains('cat-card') ? '#mimos/cat/fraldas' : '#mimos/cat/' + id;
+      return;
+    }
+    const escolher = e.target.closest('[data-escolher]');
+    if (escolher && !escolher.disabled) {
+      const p = ITENS.find(x => x.id === escolher.dataset.escolher);
+      if (!p) return;
+      if (p.id === 'fr-fraldas') { fralda = { tam: null, marca: 'Sem preferência', qtd: 1 }; location.hash = '#mimos/fraldas'; return; }
+      iniciarEscolha({ id: p.id, rotulo: p.nome, preco: p.preco, icone: p.icone });
+      return;
+    }
+    if (e.target.closest('[data-vermais]')) {
+      mostrando += LOTE;
+      rota();
+      return;
+    }
+    const tam = e.target.closest('[data-tam]');
+    if (tam) { fralda.tam = tam.dataset.tam; telaFraldas(); return; }
+    const marca = e.target.closest('[data-marca]');
+    if (marca) { fralda.marca = marca.dataset.marca; telaFraldas(); return; }
+    const qtd = e.target.closest('[data-qtd]');
+    if (qtd) { fralda.qtd = Math.min(6, Math.max(1, fralda.qtd + Number(qtd.dataset.qtd))); telaFraldas(); return; }
+    if (e.target.closest('[data-fralda-ok]') && fralda.tam) {
+      iniciarEscolha({
+        id: 'fralda-' + fralda.tam + '-' + fralda.marca + '-' + fralda.qtd + '-' + Date.now(),
+        rotulo: 'Fraldas ' + fralda.tam + ' · ' + fralda.marca + ' · ' + fralda.qtd + ' pacote' + (fralda.qtd > 1 ? 's' : ''),
+        preco: '', icone: 'ic-fralda'
       });
-      sec.appendChild(grid);
-      gbody.appendChild(sec);
-    });
-  }
-  function abrirModal(){
-    renderLista();
-    gmodal.hidden = false;
-    document.body.classList.add('gmodal-aberto');
-  }
-  function fecharModal(){
-    gmodal.hidden = true;
-    document.body.classList.remove('gmodal-aberto');
-  }
-  document.getElementById('abrir-lista').addEventListener('click', abrirModal);
-  gmodal.addEventListener('click', (e) => {
-    if (e.target.closest('[data-close]')) { fecharModal(); return; }
-    const btn = e.target.closest('button');
-    if (!btn || !btn.dataset.id) return;
-    const p = catalogo.find(x => x.id === btn.dataset.id);
-    if (!p) return;
-    const rotulo = p.nome + (p.nota ? ' (' + p.nota + ')' : '');
-    const msg = 'Olá! Escolhi o presente "' + rotulo + '" para o chá de bebê do dia 29/08!';
-    window.open(WHATS + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+      return;
+    }
+    if (e.target.closest('[data-voltar-lista]')) { pendente = null; location.hash = '#mimos'; return; }
+    if (e.target.closest('[data-ir-home]')) { location.hash = '#mimos'; return; }
+    if (e.target.closest('[data-ir-minhas]')) { location.hash = '#mimos/minhas'; return; }
+    const cancelar = e.target.closest('[data-cancelar]');
+    if (cancelar) {
+      const acoes = cancelar.closest('[data-acoes]');
+      acoes.innerHTML = '<span style="font-size:.78rem;color:var(--ink-soft);align-self:center;">Cancelar mesmo?</span>' +
+        '<button class="link-btn link-btn--vermelho" type="button" data-cancela-sim="' + cancelar.dataset.cancelar + '">Sim, cancelar</button>' +
+        '<button class="link-btn" type="button" data-cancela-nao>Manter</button>';
+      return;
+    }
+    const sim = e.target.closest('[data-cancela-sim]');
+    if (sim) {
+      const arr = lerEscolhas();
+      arr.splice(Number(sim.dataset.cancelaSim), 1);
+      gravarEscolhas(arr);
+      atualizarBadge();
+      telaMinhas();
+      return;
+    }
+    if (e.target.closest('[data-cancela-nao]')) { telaMinhas(); return; }
   });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !gmodal.hidden) fecharModal();
+
+  shopBody.addEventListener('input', (e) => {
+    if (e.target.id !== 'shop-q') return;
+    buscaTexto = e.target.value;
+    mostrando = LOTE;
+    const alvo = document.getElementById('shop-resultado');
+    if (!alvo) return;
+    const q = buscaTexto.trim().toLowerCase();
+    if (!q) { rota(); const inp = document.getElementById('shop-q'); if (inp) inp.focus(); return; }
+    const achados = ITENS.filter(p => (p.nome + ' ' + p.desc).toLowerCase().includes(q));
+    alvo.innerHTML = '<h3 class="shop-secao">Resultado da busca</h3>' + htmlListaItens(achados);
   });
+
+  shopBody.addEventListener('submit', (e) => {
+    if (e.target.id !== 'form-confirma') return;
+    e.preventDefault();
+    const nome = document.getElementById('f-nome');
+    const tel = document.getElementById('f-tel');
+    const msg = document.getElementById('f-msg');
+    let ok = true;
+    document.getElementById('campo-nome').classList.toggle('tem-erro', !nome.value.trim());
+    document.getElementById('campo-tel').classList.toggle('tem-erro', !tel.value.trim());
+    if (!nome.value.trim() || !tel.value.trim()) return;
+    if (!pendente) { location.hash = '#mimos'; return; }
+    if (idsTomados().has(pendente.id)) { location.hash = '#mimos'; return; }
+    const registro = {
+      id: pendente.id,
+      rotulo: pendente.rotulo,
+      nome: nome.value.trim(),
+      tel: tel.value.trim(),
+      msg: msg.value.trim(),
+      ts: Date.now()
+    };
+    const arr = lerEscolhas();
+    arr.push(registro);
+    gravarEscolhas(arr);
+    ultimaEscolha = registro;
+    pendente = null;
+    atualizarBadge();
+    location.hash = '#mimos/obrigado';
+  });
+
+  rota();
 
   // Animações de entrada
   const observer = new IntersectionObserver((entries) => {
