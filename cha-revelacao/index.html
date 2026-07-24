@@ -280,12 +280,6 @@
   }
   .container--wide{max-width:1000px;margin:0 auto;padding:0 28px;}
   .gift-actions{margin-top:6px;}
-  .gifts-counter{
-    margin-top:16px;
-    font-size:.74rem;font-weight:500;
-    letter-spacing:.26em;text-transform:uppercase;
-    color:var(--ink-soft);
-  }
 
   /* Modal da lista de presentes */
   .gmodal{
@@ -353,7 +347,7 @@
   .ggroup__name::after{content:"";flex:1;height:1px;background:var(--hairline);}
   .ggrid{
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
     gap:12px;
     margin-top:16px;
   }
@@ -362,60 +356,52 @@
     background:#fffdf9;
     border:1px solid var(--hairline);
     border-radius:4px;
-    padding:22px 20px 20px;
-    display:flex;flex-direction:column;gap:4px;
+    padding:16px;
+    display:grid;
+    grid-template-columns:46px 1fr;
+    column-gap:14px;row-gap:2px;
+    align-items:start;
     transition:border-color .25s ease, transform .25s ease;
   }
   .gift-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .gift-card__icon{
+    grid-row:1 / span 3;
+    width:46px;height:46px;
+    border-radius:50%;
+    background:#f3eee1;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--gold);
+  }
+  .gift-card__icon svg{
+    width:26px;height:26px;
+    fill:none;stroke:currentColor;
+    stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;
+  }
   .gift-card__name{
     font-family:var(--font-serif);
-    font-size:1.22rem;font-weight:600;
+    font-size:1.18rem;font-weight:600;
     line-height:1.25;
   }
   .gift-card__note{
-    font-size:.78rem;font-weight:400;
+    font-size:.76rem;font-weight:400;
     color:var(--ink-soft);
-    min-height:1.4em;
+    min-height:1.3em;
   }
   .gift-card__btn{
-    margin-top:14px;
-    align-self:flex-start;
+    margin-top:10px;
+    justify-self:start;
     background:transparent;
     border:1px solid var(--ink);
     border-radius:999px;
-    padding:8px 20px;
+    padding:7px 18px;
     font-family:var(--font-body);
-    font-size:.68rem;font-weight:500;
+    font-size:.66rem;font-weight:500;
     letter-spacing:.22em;text-transform:uppercase;
     color:var(--ink);
     cursor:pointer;
     transition:background .25s ease,color .25s ease;
   }
   .gift-card__btn:hover{background:var(--ink);color:var(--paper);}
-  .gift-card.is-taken{
-    background:#f3f0e6;
-    border-color:#ddd6c2;
-  }
-  .gift-card.is-taken:hover{transform:none;border-color:#ddd6c2;}
-  .gift-card.is-taken .gift-card__name{color:var(--ink-soft);}
-  .gift-card.is-taken .gift-card__btn{
-    border-color:transparent;
-    background:transparent;
-    color:var(--gold);
-    padding-left:0;
-    cursor:default;
-  }
-  .gift-card.is-taken .gift-card__btn:hover{background:transparent;color:var(--gold);}
-  .gift-card__undo{
-    background:none;border:none;cursor:pointer;
-    align-self:flex-start;
-    font-family:var(--font-body);
-    font-size:.64rem;font-weight:400;
-    letter-spacing:.14em;text-transform:uppercase;
-    color:var(--ink-soft);
-    text-decoration:underline;
-    padding:4px 0 0;
-  }
   .gifts-note{
     max-width:540px;
     margin:36px auto 0;
@@ -483,6 +469,36 @@
 </style>
 </head>
 <body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <defs>
+    <g id="ic-fralda"><path d="M4 8h16v2a10 10 0 0 1-8 10A10 10 0 0 1 4 10Z"/><path d="M4 11h3M17 11h3"/></g>
+    <g id="ic-lencos"><rect x="3.5" y="9" width="17" height="10" rx="2"/><ellipse cx="12" cy="9" rx="4" ry="1.4"/><path d="M10 8.5q2-3.5 4 0"/></g>
+    <g id="ic-tubo"><rect x="9.5" y="3.5" width="5" height="3" rx="1"/><path d="M9.5 8h5l1.5 10a2 2 0 0 1-2 2.5h-4a2 2 0 0 1-2-2.5Z"/></g>
+    <g id="ic-frasco"><rect x="8.5" y="10" width="7" height="10" rx="2"/><path d="M11 10V7h2v3M11 5h5v2h-3"/></g>
+    <g id="ic-algodao"><circle cx="8.5" cy="14" r="3.2"/><circle cx="13" cy="12" r="3.6"/><circle cx="16.5" cy="15" r="2.8"/><path d="M18 5l-3.5 4.5"/></g>
+    <g id="ic-colonia"><circle cx="12" cy="14.5" r="5"/><path d="M10.5 9.5V6h3v3.5M13.5 4.5h3M18 3.5l1.5 1.5"/></g>
+    <g id="ic-tesoura"><circle cx="6.5" cy="7" r="2"/><circle cx="6.5" cy="17" r="2"/><path d="M8 8.5 19 16.5M8 15.5 19 7.5"/></g>
+    <g id="ic-aspirador"><circle cx="9" cy="15" r="4"/><path d="M12 12l6-6M18 6l1.5 1.5"/></g>
+    <g id="ic-termometro"><path d="M12 4v10"/><circle cx="12" cy="17" r="3"/><path d="M14.5 6.5H16M14.5 9.5H16"/></g>
+    <g id="ic-body"><path d="M9 4h6l4 3-2 2.5-1-1V13c0 3.5-1.5 5-4 5s-4-1.5-4-5V8.5l-1 1L5 7Z"/><circle cx="10.5" cy="16" r=".4"/><circle cx="13.5" cy="16" r=".4"/></g>
+    <g id="ic-calca"><path d="M7 5h10l1.5 14h-4.5L12 11l-2 8H5.5Z"/><path d="M7 8h10"/></g>
+    <g id="ic-meia"><path d="M9.5 4h5.5v8l2.5 2.5a3.5 3.5 0 0 1-5 5L9.5 16Z"/><path d="M9.5 7H15"/></g>
+    <g id="ic-babador"><circle cx="12" cy="7" r="3"/><path d="M6.5 11a7 7 0 0 0 11 0c2 1.5 3 3.5 3 5.5a10 10 0 0 1-17 0c0-2 1-4 3-5.5Z" transform="scale(.92) translate(1 1)"/></g>
+    <g id="ic-toalha"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M4 10h16M4 14h16"/></g>
+    <g id="ic-casaco"><path d="M9 4l3 2 3-2 4 3-2 3v9H7v-9L5 7Z"/><path d="M12 6v13"/><circle cx="14" cy="11" r=".4"/><circle cx="14" cy="14" r=".4"/></g>
+    <g id="ic-touca"><path d="M5 14a7 7 0 0 1 14 0"/><path d="M4.5 14h15v3h-15Z"/><circle cx="12" cy="5.5" r="1.4"/></g>
+    <g id="ic-urso"><circle cx="12" cy="13" r="5.5"/><circle cx="7.5" cy="7.5" r="2"/><circle cx="16.5" cy="7.5" r="2"/><circle cx="10.2" cy="12" r=".45"/><circle cx="13.8" cy="12" r=".45"/><path d="M11 15.5q1 .8 2 0"/></g>
+    <g id="ic-chupeta"><circle cx="12" cy="7.5" r="2.4"/><path d="M6.5 12.5a5.5 3 0 0 0 11 0a5.5 3 0 0 0-11 0Z"/><circle cx="12" cy="17.5" r="2.2"/></g>
+    <g id="ic-mamadeira"><path d="M11 3.5h2V6h-2Z"/><rect x="9.5" y="6" width="5" height="2" rx="1"/><rect x="9" y="8" width="6" height="12" rx="2.5"/><path d="M15 12h-2M15 15h-2"/></g>
+    <g id="ic-escova"><ellipse cx="12" cy="7.5" rx="3" ry="4.5"/><path d="M12 12v8.5M10.5 5.5v4M13.5 5.5v4"/></g>
+    <g id="ic-trocador"><rect x="4" y="7.5" width="16" height="10" rx="2"/><path d="M9.5 7.5v10M14.5 7.5v10"/></g>
+    <g id="ic-bolsa"><rect x="5" y="9" width="14" height="10" rx="2"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/></g>
+    <g id="ic-mobile"><path d="M5 6h14M12 3.5V6"/><path d="M8 6v4M12 6v6M16 6v3.5"/><circle cx="8" cy="11.5" r="1.5"/><circle cx="12" cy="13.5" r="1.5"/><circle cx="16" cy="11" r="1.5"/></g>
+    <g id="ic-livro"><path d="M12 6c-2-1.6-5-1.6-7.5 0v12c2.5-1.6 5.5-1.6 7.5 0c2-1.6 5-1.6 7.5 0V6c-2.5-1.6-5.5-1.6-7.5 0Z"/><path d="M12 6v12"/></g>
+    <g id="ic-chocalho"><circle cx="12" cy="8" r="4"/><path d="M12 12v6.5"/><circle cx="12" cy="19.8" r="1"/><circle cx="12" cy="8" r="1.2"/></g>
+  </defs>
+</svg>
 
 <main>
   <!-- ===== Hero ===== -->
@@ -569,14 +585,13 @@
       <img class="gift__img reveal" src="assets/ursinho.jpg" alt="Ilustração em aquarela de um ursinho de crochê com gravata azul ao lado de sapatinhos de bebê">
       <span class="kicker reveal">Com carinho</span>
       <h2 class="section-title reveal">Lista de presentes</h2>
-      <p class="lead reveal">Escolha o que você quer trazer — cada presente pode ser escolhido por apenas uma pessoa ou família. E, junto, um mimo que sentir em seu coração.</p>
+      <p class="lead reveal">Escolha o que você quer trazer — e, junto, um mimo que sentir em seu coração.</p>
     </div>
     <div class="container">
       <div class="gift-actions reveal">
         <button class="btn btn--solid" type="button" id="abrir-lista">Ver lista de presentes</button>
-        <p class="gifts-counter" id="gift-contador"></p>
       </div>
-      <p class="gifts-note reveal">Ao escolher, você confirma pelo WhatsApp e o presente fica reservado no seu nome. O que importa mesmo é a sua presença.</p>
+      <p class="gifts-note reveal">Ao escolher, é só confirmar pelo WhatsApp. O que importa mesmo é a sua presença.</p>
     </div>
   </section>
 
@@ -613,7 +628,7 @@
     <div class="gmodal__head">
       <div>
         <p class="gmodal__title" id="gmodal-titulo">Lista de presentes</p>
-        <p class="gmodal__sub" id="gmodal-sub">Cada presente pode ser escolhido por uma pessoa ou família.</p>
+        <p class="gmodal__sub" id="gmodal-sub">Toque em &ldquo;Escolher&rdquo; e confirme pelo WhatsApp.</p>
       </div>
       <button class="gmodal__close" type="button" data-close aria-label="Fechar lista">&#10005;</button>
     </div>
@@ -696,54 +711,54 @@
     if (salvo && frases[salvo]) escolher(salvo, false);
   } catch(e) {}
 
-  // ===== Lista de presentes — 1 pessoa/família por presente =====
+  // ===== Lista de presentes =====
   const WHATS = 'https://wa.me/818058298903';
   const grupos = [
     { nome: 'Fraldas', itens: [
-      { nome: 'Fralda RN', cotas: 4 },
-      { nome: 'Fralda P', cotas: 8 },
-      { nome: 'Fralda M', cotas: 12 },
-      { nome: 'Fralda G', cotas: 12 },
-      { nome: 'Fralda XG', cotas: 6 }
+      { nome: 'Fralda RN', cotas: 4, icone: 'ic-fralda' },
+      { nome: 'Fralda P', cotas: 8, icone: 'ic-fralda' },
+      { nome: 'Fralda M', cotas: 12, icone: 'ic-fralda' },
+      { nome: 'Fralda G', cotas: 12, icone: 'ic-fralda' },
+      { nome: 'Fralda XG', cotas: 6, icone: 'ic-fralda' }
     ]},
     { nome: 'Higiene e cuidados', itens: [
-      { nome: 'Lenços umedecidos', cotas: 8, nota: 'kit com 3 ou mais' },
-      { nome: 'Pomada para assaduras', cotas: 4 },
-      { nome: 'Sabonete líquido de bebê', cotas: 3, nota: 'neutro' },
-      { nome: 'Shampoo e condicionador de bebê', cotas: 2 },
-      { nome: 'Algodão e hastes de bebê', cotas: 2 },
-      { nome: 'Água de colônia de bebê', cotas: 1 },
-      { nome: 'Kit higiene', cotas: 1, nota: 'escova, pente e tesourinha' },
-      { nome: 'Aspirador nasal', cotas: 1 },
-      { nome: 'Termômetro digital', cotas: 1 }
+      { nome: 'Lenços umedecidos', cotas: 8, nota: 'kit com 3 ou mais', icone: 'ic-lencos' },
+      { nome: 'Pomada para assaduras', cotas: 4, icone: 'ic-tubo' },
+      { nome: 'Sabonete líquido de bebê', cotas: 3, nota: 'neutro', icone: 'ic-frasco' },
+      { nome: 'Shampoo e condicionador de bebê', cotas: 2, icone: 'ic-frasco' },
+      { nome: 'Algodão e hastes de bebê', cotas: 2, icone: 'ic-algodao' },
+      { nome: 'Água de colônia de bebê', cotas: 1, icone: 'ic-colonia' },
+      { nome: 'Kit higiene', cotas: 1, nota: 'escova, pente e tesourinha', icone: 'ic-tesoura' },
+      { nome: 'Aspirador nasal', cotas: 1, icone: 'ic-aspirador' },
+      { nome: 'Termômetro digital', cotas: 1, icone: 'ic-termometro' }
     ]},
     { nome: 'Roupinhas e enxoval', itens: [
-      { nome: 'Kit bodies RN', cotas: 2, nota: 'cores neutras' },
-      { nome: 'Kit bodies P', cotas: 2, nota: 'cores neutras' },
-      { nome: 'Kit bodies M', cotas: 2, nota: 'cores neutras' },
-      { nome: 'Macacão RN/P', cotas: 2, nota: 'cores neutras' },
-      { nome: 'Mijão / culote', cotas: 2, nota: 'cores neutras' },
-      { nome: 'Meias e luvinhas', cotas: 2 },
-      { nome: 'Babadores', cotas: 2 },
-      { nome: 'Fraldas de boca', cotas: 2 },
-      { nome: 'Toalha de banho com capuz', cotas: 2 },
-      { nome: 'Manta de algodão', cotas: 2, nota: 'tom neutro' },
-      { nome: 'Lençol de berço', cotas: 2 },
-      { nome: 'Saída de banho', cotas: 1 },
-      { nome: 'Casaquinho de linha', cotas: 1 },
-      { nome: 'Touca / gorro', cotas: 1 }
+      { nome: 'Kit bodies RN', cotas: 2, nota: 'cores neutras', icone: 'ic-body' },
+      { nome: 'Kit bodies P', cotas: 2, nota: 'cores neutras', icone: 'ic-body' },
+      { nome: 'Kit bodies M', cotas: 2, nota: 'cores neutras', icone: 'ic-body' },
+      { nome: 'Macacão RN/P', cotas: 2, nota: 'cores neutras', icone: 'ic-body' },
+      { nome: 'Mijão / culote', cotas: 2, nota: 'cores neutras', icone: 'ic-calca' },
+      { nome: 'Meias e luvinhas', cotas: 2, icone: 'ic-meia' },
+      { nome: 'Babadores', cotas: 2, icone: 'ic-babador' },
+      { nome: 'Fraldas de boca', cotas: 2, icone: 'ic-toalha' },
+      { nome: 'Toalha de banho com capuz', cotas: 2, icone: 'ic-toalha' },
+      { nome: 'Manta de algodão', cotas: 2, nota: 'tom neutro', icone: 'ic-toalha' },
+      { nome: 'Lençol de berço', cotas: 2, icone: 'ic-toalha' },
+      { nome: 'Saída de banho', cotas: 1, icone: 'ic-casaco' },
+      { nome: 'Casaquinho de linha', cotas: 1, icone: 'ic-casaco' },
+      { nome: 'Touca / gorro', cotas: 1, icone: 'ic-touca' }
     ]},
     { nome: 'Mimos e utilidades', itens: [
-      { nome: 'Naninha', cotas: 1 },
-      { nome: 'Chupeta', cotas: 1 },
-      { nome: 'Porta-chupeta', cotas: 1 },
-      { nome: 'Mamadeira', cotas: 1 },
-      { nome: 'Escova de lavar mamadeira', cotas: 1 },
-      { nome: 'Trocador portátil', cotas: 1 },
-      { nome: 'Bolsa térmica de bebê', cotas: 1 },
-      { nome: 'Móbile de berço', cotas: 1 },
-      { nome: 'Livrinho de banho', cotas: 1 },
-      { nome: 'Chocalho', cotas: 1 }
+      { nome: 'Naninha', cotas: 1, icone: 'ic-urso' },
+      { nome: 'Chupeta', cotas: 1, icone: 'ic-chupeta' },
+      { nome: 'Porta-chupeta', cotas: 1, icone: 'ic-chupeta' },
+      { nome: 'Mamadeira', cotas: 1, icone: 'ic-mamadeira' },
+      { nome: 'Escova de lavar mamadeira', cotas: 1, icone: 'ic-escova' },
+      { nome: 'Trocador portátil', cotas: 1, icone: 'ic-trocador' },
+      { nome: 'Bolsa térmica de bebê', cotas: 1, icone: 'ic-bolsa' },
+      { nome: 'Móbile de berço', cotas: 1, icone: 'ic-mobile' },
+      { nome: 'Livrinho de banho', cotas: 1, icone: 'ic-livro' },
+      { nome: 'Chocalho', cotas: 1, icone: 'ic-chocalho' }
     ]}
   ];
   const slug = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-');
@@ -755,6 +770,7 @@
         const p = {
           id: slug(item.nome) + (item.cotas > 1 ? '-' + c : ''),
           nome: item.nome,
+          icone: item.icone,
           nota: item.cotas > 1 ? 'cota ' + c + ' de ' + item.cotas : (item.nota || ''),
           notaExtra: item.cotas > 1 ? (item.nota || '') : ''
         };
@@ -766,24 +782,7 @@
 
   const gmodal = document.getElementById('gmodal');
   const gbody = document.getElementById('gmodal-body');
-  const gsub = document.getElementById('gmodal-sub');
-  const contadorEl = document.getElementById('gift-contador');
-  const lerReservas = () => {
-    try { return JSON.parse(localStorage.getItem('presentes-reservados') || '{}'); }
-    catch(e) { return {}; }
-  };
-  const gravarReservas = (r) => {
-    try { localStorage.setItem('presentes-reservados', JSON.stringify(r)); } catch(e) {}
-  };
-  function atualizarContador(){
-    const reservas = lerReservas();
-    const total = catalogo.length;
-    const livres = total - Object.keys(reservas).filter(id => catalogo.some(p => p.id === id)).length;
-    contadorEl.textContent = livres + ' de ' + total + ' presentes disponíveis';
-    gsub.textContent = 'Cada presente pode ser escolhido por uma pessoa ou família — ' + livres + ' de ' + total + ' disponíveis.';
-  }
   function renderLista(){
-    const reservas = lerReservas();
     gbody.innerHTML = '';
     grupos.forEach(g => {
       const sec = document.createElement('div');
@@ -792,23 +791,19 @@
       const grid = document.createElement('div');
       grid.className = 'ggrid';
       g.presentes.forEach(p => {
-        const quem = reservas[p.id];
         const nota = [p.nota, p.notaExtra].filter(Boolean).join(' · ');
         const card = document.createElement('div');
-        card.className = 'gift-card' + (quem ? ' is-taken' : '');
+        card.className = 'gift-card';
         card.innerHTML =
+          '<span class="gift-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#' + p.icone + '"/></svg></span>' +
           '<span class="gift-card__name">' + p.nome + '</span>' +
           '<span class="gift-card__note">' + (nota || '&nbsp;') + '</span>' +
-          (quem
-            ? '<button class="gift-card__btn" type="button" disabled>Escolhido ✓</button>' +
-              '<button class="gift-card__undo" type="button" data-undo="' + p.id + '">desfazer</button>'
-            : '<button class="gift-card__btn" type="button" data-id="' + p.id + '">Escolher</button>');
+          '<button class="gift-card__btn" type="button" data-id="' + p.id + '">Escolher</button>';
         grid.appendChild(card);
       });
       sec.appendChild(grid);
       gbody.appendChild(sec);
     });
-    atualizarContador();
   }
   function abrirModal(){
     renderLista();
@@ -823,31 +818,16 @@
   gmodal.addEventListener('click', (e) => {
     if (e.target.closest('[data-close]')) { fecharModal(); return; }
     const btn = e.target.closest('button');
-    if (!btn) return;
-    if (btn.dataset.undo) {
-      const reservas = lerReservas();
-      delete reservas[btn.dataset.undo];
-      gravarReservas(reservas);
-      renderLista();
-      return;
-    }
-    if (!btn.dataset.id) return;
+    if (!btn || !btn.dataset.id) return;
     const p = catalogo.find(x => x.id === btn.dataset.id);
     if (!p) return;
     const rotulo = p.nome + (p.nota ? ' (' + p.nota + ')' : '');
-    const nome = prompt('Seu nome (ou da família) para reservar "' + rotulo + '":');
-    if (!nome || !nome.trim()) return;
-    const reservas = lerReservas();
-    reservas[p.id] = nome.trim();
-    gravarReservas(reservas);
-    renderLista();
-    const msg = 'Olá! Quero reservar o presente "' + rotulo + '" para o chá de bebê do dia 29/08. — ' + nome.trim();
+    const msg = 'Olá! Escolhi o presente "' + rotulo + '" para o chá de bebê do dia 29/08!';
     window.open(WHATS + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !gmodal.hidden) fecharModal();
   });
-  atualizarContador();
 
   // Animações de entrada
   const observer = new IntersectionObserver((entries) => {
