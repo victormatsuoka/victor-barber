@@ -271,26 +271,83 @@
     to{transform:translateY(105vh) rotate(720deg);opacity:.9;}
   }
 
-  /* ===== Presente ===== */
+  /* ===== Lista de presentes ===== */
   .gift__img{
     width:min(300px,64vw);
     margin:0 auto 8px;
     -webkit-mask-image:radial-gradient(ellipse 74% 74% at center, #000 58%, transparent 94%);
     mask-image:radial-gradient(ellipse 74% 74% at center, #000 58%, transparent 94%);
   }
-  .gift__text{
-    font-family:var(--font-serif);
-    font-size:clamp(1.4rem,3vw,1.7rem);
-    font-weight:500;
-    max-width:460px;
-    margin:0 auto;
-    line-height:1.45;
+  .container--wide{max-width:1000px;margin:0 auto;padding:0 28px;}
+  .gifts{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(212px,1fr));
+    gap:14px;
+    text-align:left;
   }
-  .gift__note{
-    font-size:.82rem;font-weight:400;
-    letter-spacing:.24em;text-transform:uppercase;
+  .gift-card{
+    background:#fffdf9;
+    border:1px solid var(--hairline);
+    border-radius:4px;
+    padding:22px 20px 20px;
+    display:flex;flex-direction:column;gap:4px;
+    transition:border-color .25s ease, transform .25s ease;
+  }
+  .gift-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .gift-card__name{
+    font-family:var(--font-serif);
+    font-size:1.22rem;font-weight:600;
+    line-height:1.25;
+  }
+  .gift-card__note{
+    font-size:.78rem;font-weight:400;
     color:var(--ink-soft);
-    margin-top:18px;
+    min-height:1.4em;
+  }
+  .gift-card__btn{
+    margin-top:14px;
+    align-self:flex-start;
+    background:transparent;
+    border:1px solid var(--ink);
+    border-radius:999px;
+    padding:8px 20px;
+    font-family:var(--font-body);
+    font-size:.68rem;font-weight:500;
+    letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink);
+    cursor:pointer;
+    transition:background .25s ease,color .25s ease;
+  }
+  .gift-card__btn:hover{background:var(--ink);color:var(--paper);}
+  .gift-card.is-taken{
+    background:#f3f0e6;
+    border-color:#ddd6c2;
+  }
+  .gift-card.is-taken:hover{transform:none;border-color:#ddd6c2;}
+  .gift-card.is-taken .gift-card__name{color:var(--ink-soft);}
+  .gift-card.is-taken .gift-card__btn{
+    border-color:transparent;
+    background:transparent;
+    color:var(--gold);
+    padding-left:0;
+    cursor:default;
+  }
+  .gift-card.is-taken .gift-card__btn:hover{background:transparent;color:var(--gold);}
+  .gift-card__undo{
+    background:none;border:none;cursor:pointer;
+    align-self:flex-start;
+    font-family:var(--font-body);
+    font-size:.64rem;font-weight:400;
+    letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-soft);
+    text-decoration:underline;
+    padding:4px 0 0;
+  }
+  .gifts-note{
+    max-width:540px;
+    margin:36px auto 0;
+    font-size:.84rem;
+    color:var(--ink-soft);
   }
 
   /* ===== Convite ===== */
@@ -433,13 +490,17 @@
     </div>
   </section>
 
-  <!-- ===== Presente ===== -->
+  <!-- ===== Lista de presentes ===== -->
   <section class="section" id="presente">
     <div class="container">
       <img class="gift__img reveal" src="assets/ursinho.jpg" alt="Ilustração em aquarela de um ursinho de crochê com gravata azul ao lado de sapatinhos de bebê">
-      <span class="kicker reveal">Sugestão de presente</span>
-      <p class="gift__text reveal">Fralda + um mimo que sentir em seu coração.</p>
-      <p class="gift__note reveal">O que importa mesmo é a sua presença</p>
+      <span class="kicker reveal">Com carinho</span>
+      <h2 class="section-title reveal">Lista de presentes</h2>
+      <p class="lead reveal">Escolha o que você quer trazer — cada presente pode ser escolhido por apenas uma pessoa ou família. E, junto, um mimo que sentir em seu coração.</p>
+    </div>
+    <div class="container--wide">
+      <div class="gifts reveal" id="gifts"></div>
+      <p class="gifts-note reveal">Ao escolher, você confirma pelo WhatsApp e o presente fica reservado no seu nome. O que importa mesmo é a sua presença.</p>
     </div>
   </section>
 
@@ -544,6 +605,74 @@
     const salvo = localStorage.getItem('palpite-bebe');
     if (salvo && frases[salvo]) escolher(salvo, false);
   } catch(e) {}
+
+  // Lista de presentes — 1 pessoa/família por presente
+  const presentes = [
+    { id: 'fralda-rn',   nome: 'Fralda RN',            nota: 'recém-nascido' },
+    { id: 'fralda-p1',   nome: 'Fralda P',             nota: 'cota 1' },
+    { id: 'fralda-p2',   nome: 'Fralda P',             nota: 'cota 2' },
+    { id: 'fralda-m1',   nome: 'Fralda M',             nota: 'cota 1' },
+    { id: 'fralda-m2',   nome: 'Fralda M',             nota: 'cota 2' },
+    { id: 'fralda-m3',   nome: 'Fralda M',             nota: 'cota 3' },
+    { id: 'fralda-g1',   nome: 'Fralda G',             nota: 'cota 1' },
+    { id: 'fralda-g2',   nome: 'Fralda G',             nota: 'cota 2' },
+    { id: 'lencos',      nome: 'Lenços umedecidos',    nota: 'kit com 3 ou mais' },
+    { id: 'pomada',      nome: 'Pomada para assaduras', nota: '' },
+    { id: 'sabonete',    nome: 'Sabonete líquido',     nota: 'neutro, de bebê' },
+    { id: 'kit-higiene', nome: 'Kit higiene',          nota: 'escova, pente e tesourinha' },
+    { id: 'manta',       nome: 'Manta de algodão',     nota: 'tom neutro' },
+    { id: 'toalha',      nome: 'Toalha com capuz',     nota: 'tom neutro' },
+    { id: 'bodies',      nome: 'Kit bodies',           nota: 'RN a P, cores neutras' },
+    { id: 'naninha',     nome: 'Naninha',              nota: '' }
+  ];
+  const WHATS = 'https://wa.me/818058298903';
+  const giftsEl = document.getElementById('gifts');
+  const lerReservas = () => {
+    try { return JSON.parse(localStorage.getItem('presentes-reservados') || '{}'); }
+    catch(e) { return {}; }
+  };
+  const gravarReservas = (r) => {
+    try { localStorage.setItem('presentes-reservados', JSON.stringify(r)); } catch(e) {}
+  };
+  function renderGifts(){
+    const reservas = lerReservas();
+    giftsEl.innerHTML = '';
+    presentes.forEach(p => {
+      const quem = reservas[p.id];
+      const card = document.createElement('div');
+      card.className = 'gift-card' + (quem ? ' is-taken' : '');
+      const rotulo = p.nota ? p.nome + ' · ' + p.nota : p.nome;
+      card.innerHTML =
+        '<span class="gift-card__name">' + p.nome + '</span>' +
+        '<span class="gift-card__note">' + (p.nota || '&nbsp;') + '</span>' +
+        (quem
+          ? '<button class="gift-card__btn" type="button" disabled>Escolhido ✓</button>' +
+            '<button class="gift-card__undo" type="button" data-undo="' + p.id + '">desfazer</button>'
+          : '<button class="gift-card__btn" type="button" data-id="' + p.id + '" data-rotulo="' + rotulo + '">Escolher</button>');
+      giftsEl.appendChild(card);
+    });
+  }
+  giftsEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.dataset.undo) {
+      const reservas = lerReservas();
+      delete reservas[btn.dataset.undo];
+      gravarReservas(reservas);
+      renderGifts();
+      return;
+    }
+    if (!btn.dataset.id) return;
+    const nome = prompt('Seu nome (ou da família) para reservar "' + btn.dataset.rotulo + '":');
+    if (!nome || !nome.trim()) return;
+    const reservas = lerReservas();
+    reservas[btn.dataset.id] = nome.trim();
+    gravarReservas(reservas);
+    renderGifts();
+    const msg = 'Olá! Quero reservar o presente "' + btn.dataset.rotulo + '" para o chá de bebê do dia 29/08. — ' + nome.trim();
+    window.open(WHATS + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+  });
+  renderGifts();
 
   // Animações de entrada
   const observer = new IntersectionObserver((entries) => {
