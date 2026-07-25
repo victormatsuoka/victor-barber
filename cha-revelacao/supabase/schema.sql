@@ -105,6 +105,7 @@ create table if not exists baby_messages (
   recipient_type text not null default 'baby'
     check (recipient_type in ('miguel','zoe','baby')),
   message text not null check (char_length(message) <= 600),
+  capsule boolean not null default false,
   favorite boolean not null default false,
   status text not null default 'new' check (status in ('new','read','hidden')),
   read_at timestamptz,
@@ -123,7 +124,7 @@ create table if not exists settings (
   key text primary key,
   value text
 );
-insert into settings (key, value) values ('diaper_priority', '')
+insert into settings (key, value) values ('diaper_priority', ''), ('invite_url', '')
 on conflict (key) do nothing;
 
 -- ------------------------------- RLS ----------------------------------
@@ -148,7 +149,7 @@ create policy admin_read_admins on admin_users for select using (is_admin());
 
 -- público (anon): só o necessário — catálogo ativo e prioridade de fraldas
 create policy public_read_gifts on gifts for select using (active = true);
-create policy public_read_priority on settings for select using (key = 'diaper_priority');
+create policy public_read_priority on settings for select using (key in ('diaper_priority'));
 -- nenhuma leitura pública de guests / reservas / fraldas / mensagens.
 
 -- status público dos presentes SEM dados pessoais:
@@ -165,7 +166,8 @@ create or replace function public_confirm(
   p_diaper_size text default null, p_diaper_brand text default 'Sem preferência',
   p_diaper_qty int default 1,
   p_gift_id text default null, p_gift_message text default null,
-  p_baby_recipient text default null, p_baby_message text default null
+  p_baby_recipient text default null, p_baby_message text default null,
+  p_baby_capsule boolean default false
 ) returns json
 language plpgsql security definer set search_path = public as $$
 declare
@@ -209,9 +211,10 @@ begin
   end if;
 
   if coalesce(trim(p_baby_message),'') <> '' then
-    insert into baby_messages (guest_id, guest_name, guest_phone, recipient_type, message)
+    insert into baby_messages (guest_id, guest_name, guest_phone, recipient_type, message, capsule)
     values (v_guest.id, v_guest.full_name, v_guest.phone,
-            coalesce(nullif(p_baby_recipient,''),'baby'), left(trim(p_baby_message), 600));
+            coalesce(nullif(p_baby_recipient,''),'baby'), left(trim(p_baby_message), 600),
+            coalesce(p_baby_capsule, false));
   end if;
 
   return json_build_object('ok', true, 'code', v_code, 'guest_id', v_guest.id);

@@ -1335,6 +1335,9 @@
       '</div>' +
       '<div class="form-campo" style="margin-top:14px;"><textarea id="f-baby" maxlength="500" placeholder="Escreva aqui uma mensagem especial para Miguel ou Zoe..." style="min-height:110px;"></textarea>' +
       '<p class="msg-bebe__cont"><span id="f-baby-cont">0</span>/500</p></div>' +
+      '<label style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--ink-soft);padding-bottom:14px;cursor:pointer;">' +
+        '<input type="checkbox" id="f-capsula" style="margin-top:3px;">' +
+        '<span>Guardar esta mensagem na <strong>Cápsula do Tempo</strong> — para Miguel ou Zoe ler no futuro</span></label>' +
     '</div>';
     h += '<div class="fluxo__acao"><button class="btn btn--solid" type="submit">Confirmar presente</button>' +
       '<button class="link-btn" type="button" data-voltar-lista>Voltar e escolher outro</button></div>';
@@ -1638,6 +1641,7 @@
       msg: msg.value.trim(),
       baby: baby.value.trim(),
       babyDest: babyDest,
+      capsula: !!(document.getElementById('f-capsula') && document.getElementById('f-capsula').checked),
       ts: Date.now()
     };
 
@@ -1652,7 +1656,8 @@
         p_vote: palpite,
         p_gift_message: registro.msg || null,
         p_baby_recipient: registro.baby ? babyDest : null,
-        p_baby_message: registro.baby || null
+        p_baby_message: registro.baby || null,
+        p_baby_capsule: registro.capsula
       };
       if (pendente.tipo === 'fralda') {
         params.p_diaper_size = pendente.tam.startsWith('新生児') ? '新生児' : pendente.tam;

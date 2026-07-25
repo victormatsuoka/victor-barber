@@ -102,6 +102,40 @@
   .toast.on{opacity:1;}
   @media(min-width:900px){.toast{bottom:28px;}}
 
+  /* dashboard visual */
+  .grafico{background:var(--card);border:1px solid var(--hairline);padding:16px;margin-bottom:10px;}
+  .grafico h3{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px;}
+  .duo{display:flex;align-items:center;gap:10px;font-size:.78rem;margin:6px 0;}
+  .duo b{min-width:86px;font-weight:500;}
+  .duo .trilho{flex:1;height:12px;background:#efe9db;position:relative;}
+  .duo .trilho i{position:absolute;left:0;top:0;bottom:0;background:var(--gold);}
+  .duo .trilho i.b2{background:#cbbd9d;}
+  .empilhada{display:flex;height:16px;overflow:hidden;}
+  .empilhada i{display:block;height:100%;}
+  .legenda{display:flex;gap:14px;flex-wrap:wrap;font-size:.68rem;color:var(--ink-soft);margin-top:8px;}
+  .legenda i{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px;}
+  .progresso{margin:10px 0;}
+  .progresso b{display:flex;justify-content:space-between;font-size:.74rem;font-weight:500;margin-bottom:4px;}
+  .progresso .trilho{height:10px;background:#efe9db;}
+  .progresso .trilho i{display:block;height:100%;background:var(--gold);}
+  .ultima-msg{background:var(--card);border:1px solid var(--gold);padding:18px;margin-bottom:22px;}
+  .ultima-msg h3{font-family:var(--serif);font-size:1.15rem;margin-bottom:6px;}
+  .tl-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--hairline);}
+  .tl-item time{min-width:76px;font-size:.72rem;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .tl-item p{font-size:.9rem;}
+  .notif{position:fixed;top:14px;right:14px;z-index:120;display:flex;flex-direction:column;gap:8px;max-width:290px;}
+  .notif div{background:var(--ink);color:var(--paper);padding:10px 14px;font-size:.8rem;box-shadow:0 8px 20px rgba(0,0,0,.18);animation:notifIn .3s ease;}
+  @keyframes notifIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}
+  .busca-global{margin-bottom:18px;}
+  .chips-tl{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+  .chips-tl button{border:1px solid var(--hairline);background:var(--card);padding:6px 14px;border-radius:999px;font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);}
+  .chips-tl button.on{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .nav-inferior{overflow-x:auto;}
+  .nav-inferior a{min-width:64px;flex:0 0 auto;}
+  .print-capa{page-break-after:always;text-align:center;padding-top:35vh;font-family:var(--serif);}
+  .print-capa h1{font-size:2.4rem;margin-bottom:10px;}
+  .print-capa p{font-size:1rem;color:#666;}
+
   /* impressão bonita (PDF) */
   @media print{
     body *{visibility:hidden;}
@@ -197,7 +231,7 @@ function seedDemo(){
     { id:crypto.randomUUID(), guest_name:'Carlos Yamada', guest_phone:'090-7777-8888', size:'L', brand:'GOO.N', package_quantity:1, status:'promised', received_quantity:0 }
   ];
   DB.msgs = [
-    { id:crypto.randomUUID(), guest_name:'Família Tanaka', guest_phone:'090-1111-2222', recipient_type:'baby', message:'Que você chegue cheio de saúde e alegria! Estamos ansiosos.', favorite:true, status:'new', created_at:new Date().toISOString() },
+    { id:crypto.randomUUID(), guest_name:'Família Tanaka', guest_phone:'090-1111-2222', recipient_type:'baby', message:'Que você chegue cheio de saúde e alegria! Estamos ansiosos.', favorite:true, status:'new', capsule:true, created_at:new Date().toISOString() },
     { id:crypto.randomUUID(), guest_name:'Ana Sato', guest_phone:'080-3333-4444', recipient_type:'miguel', message:'Miguel ou Zoe, você já é muito amado!', favorite:false, status:'read', created_at:new Date().toISOString() }
   ];
   DB.prioridade = 'Precisamos mais dos tamanhos M e L 💛';
@@ -213,10 +247,13 @@ const API = {
       sb.from('gift_reservations').select('*').order('reserved_at', { ascending:false }),
       sb.from('diaper_choices').select('*').order('created_at', { ascending:false }),
       sb.from('baby_messages').select('*').order('created_at', { ascending:false }),
-      sb.from('settings').select('*').eq('key','diaper_priority').maybeSingle()
+      sb.from('settings').select('*')
     ]);
     DB.guests = g.data || []; DB.gifts = gf.data || []; DB.reservas = r.data || [];
-    DB.fraldas = f.data || []; DB.msgs = m.data || []; DB.prioridade = (s.data && s.data.value) || '';
+    DB.fraldas = f.data || []; DB.msgs = m.data || [];
+    const cfg = {}; (s.data || []).forEach(x => cfg[x.key] = x.value);
+    DB.prioridade = cfg.diaper_priority || '';
+    DB.linkConvite = cfg.invite_url || '';
   },
   async up(tabela, obj){
     if (DEMO) { toast('Demonstração: nada foi salvo'); return { error:null }; }
@@ -230,6 +267,10 @@ const API = {
   async prioridade(v){
     if (DEMO) { DB.prioridade = v; return; }
     await sb.from('settings').upsert({ key:'diaper_priority', value:v });
+  },
+  async setSetting(k, v){
+    if (DEMO) { if (k === 'invite_url') DB.linkConvite = v; return; }
+    await sb.from('settings').upsert({ key:k, value:v });
   },
   async uploadImagem(file, giftId){
     if (DEMO) return '';
@@ -248,8 +289,9 @@ const API = {
 
 /* -------------------------------- navegação -------------------------------- */
 const SECOES = [
-  ['inicio','Início','⌂'], ['convidados','Convidados','👤'], ['fraldas','Fraldas','◻'],
-  ['presentes','Presentes','🎁'], ['entregas','Entregas','✓'], ['mensagens','Mensagens','✉']
+  ['inicio','Dashboard','⌂'], ['convidados','Convidados','👤'], ['presentes','Presentes','🎁'],
+  ['fraldas','Fraldas','◻'], ['entregas','Entregas','✓'], ['mensagens','Mensagens','✉'],
+  ['timeline','Timeline','↺'], ['capsula','Cápsula','⏳'], ['config','Config.','⚙']
 ];
 let secao = 'inicio';
 function montarNavs(){
@@ -291,6 +333,7 @@ function imprimir(titulo, htmlInterno){
 const $c = () => document.getElementById('conteudo');
 
 function telaInicio(){
+  const total = DB.guests.length || 1;
   const conf = DB.guests.filter(g => g.attendance_status === 'confirmed');
   const acomp = conf.reduce((s,g) => s + (g.companions || 0), 0);
   const fr = DB.fraldas.filter(f => f.status !== 'cancelled');
@@ -298,18 +341,57 @@ function telaInicio(){
   const resAtivas = DB.reservas.filter(reservaAtiva);
   const recebidos = DB.reservas.filter(r => r.status === 'received').length;
   const cancel = DB.reservas.filter(r => r.status === 'cancelled').length;
-  const ativos = DB.gifts.filter(g => g.active).length;
-  const disponiveis = ativos - resAtivas.length;
+  const ativos = DB.gifts.filter(g => g.active).length || 1;
+  const disponiveis = Math.max(ativos - resAtivas.length, 0);
   const msgs = DB.msgs.filter(m => m.status !== 'hidden');
   const novas = msgs.filter(m => m.status === 'new').length;
   const fav = msgs.filter(m => m.favorite).length;
+  const miguel = DB.guests.filter(g => g.gender_vote === 'miguel').length;
+  const zoe = DB.guests.filter(g => g.gender_vote === 'zoe').length;
   const card = (v,l) => '<div class="cardr"><b>' + v + '</b><span>' + l + '</span></div>';
+  const pct = (n,d) => Math.round(100 * n / Math.max(d,1));
+  const duo = (l1,v1,l2,v2) => {
+    const t = Math.max(v1 + v2, 1);
+    return '<div class="duo"><b>' + l1 + ' ' + v1 + '</b><span class="trilho"><i style="width:' + pct(v1,t) + '%"></i></span></div>' +
+           '<div class="duo"><b>' + l2 + ' ' + v2 + '</b><span class="trilho"><i class="b2" style="width:' + pct(v2,t) + '%"></i></span></div>';
+  };
+  const prog = (nome, p) => '<div class="progresso"><b><span>' + nome + '</span><span>' + p + '%</span></b><span class="trilho"><i style="width:' + p + '%"></i></span></div>';
+  const ult = msgs.slice().sort((x,y) => new Date(y.created_at) - new Date(x.created_at))[0];
+  const dest = t => t === 'miguel' ? 'Miguel' : t === 'zoe' ? 'Zoe' : 'o bebê';
+  const maxTam = Math.max(1, ...TAMANHOS.map(t => fr.filter(f => f.size === t).reduce((s,f) => s + f.package_quantity, 0)));
+
   $c().innerHTML = '<h2 class="titulo">Resumo do chá 🤍</h2><div class="cards">' +
     card(conf.length,'Confirmados') + card(acomp,'Acompanhantes') +
     card(pacotes,'Fraldas registradas') + card(resAtivas.length,'Presentes reservados') +
-    card(recebidos,'Presentes recebidos') + card(Math.max(disponiveis,0),'Presentes disponíveis') +
+    card(recebidos,'Presentes recebidos') + card(disponiveis,'Presentes disponíveis') +
     card(cancel,'Reservas canceladas') + card(msgs.length,'Mensagens para o bebê') +
     card(novas,'Mensagens novas') + card(fav,'Mensagens favoritas') + '</div>' +
+
+    (ult ? '<div class="ultima-msg"><h3>💛 Última mensagem recebida</h3>' +
+      '<small style="color:var(--ink-soft);">' + esc(ult.guest_name || 'Convidado') + ' · para ' + dest(ult.recipient_type) + ' · ' + fmtData(ult.created_at) + '</small>' +
+      '<p style="font-family:var(--serif);font-size:1.05rem;margin:8px 0;">&ldquo;' + esc(ult.message.length > 140 ? ult.message.slice(0,140) + '…' : ult.message) + '&rdquo;</p>' +
+      '<button class="btn btn--mini" data-ir="mensagens">Ver todas</button></div>' : '') +
+
+    '<div class="grafico"><h3>Progresso</h3>' +
+      prog('Confirmações', pct(conf.length, total)) +
+      prog('Presentes', pct(resAtivas.length, ativos)) +
+      prog('Fraldas (tamanhos cobertos)', pct(TAMANHOS.filter(t => fr.some(f => f.size === t)).length, TAMANHOS.length)) +
+      prog('Mensagens', pct(msgs.length, Math.max(conf.length, 1))) + '</div>' +
+
+    '<div class="grafico"><h3>Confirmados × Não confirmados</h3>' + duo('Confirmados', conf.length, 'Não conf.', DB.guests.length - conf.length) + '</div>' +
+    '<div class="grafico"><h3>Palpite Miguel × Zoe</h3>' + duo('Miguel', miguel, 'Zoe', zoe) + '</div>' +
+    '<div class="grafico"><h3>Fraldas por tamanho (pacotes)</h3>' +
+      TAMANHOS.map(t => { const v = fr.filter(f => f.size === t).reduce((s,f) => s + f.package_quantity, 0);
+        return '<div class="duo"><b>' + t + ' · ' + v + '</b><span class="trilho"><i style="width:' + pct(v, maxTam) + '%"></i></span></div>'; }).join('') + '</div>' +
+    '<div class="grafico"><h3>Presentes</h3>' +
+      '<div class="empilhada">' +
+        '<i style="background:#cbd5bd;width:' + pct(disponiveis, ativos) + '%"></i>' +
+        '<i style="background:var(--gold);width:' + pct(resAtivas.length - recebidos, ativos) + '%"></i>' +
+        '<i style="background:#8a6f35;width:' + pct(recebidos, ativos) + '%"></i></div>' +
+      '<div class="legenda"><span><i style="background:#cbd5bd"></i>Disponíveis ' + disponiveis + '</span>' +
+      '<span><i style="background:var(--gold)"></i>Reservados ' + (resAtivas.length - recebidos) + '</span>' +
+      '<span><i style="background:#8a6f35"></i>Recebidos ' + recebidos + '</span></div></div>' +
+
     '<div class="acoes-rapidas">' +
       '<button class="btn btn--mini" data-ir="presentes" data-acao="novo-presente">+ Adicionar presente</button>' +
       '<button class="btn btn--mini" data-ir="presentes">Ver reservas</button>' +
@@ -317,6 +399,8 @@ function telaInicio(){
       '<button class="btn btn--mini" data-ir="convidados">Ver convidados</button>' +
       '<button class="btn btn--mini" data-ir="entregas">Marcar entregas</button>' +
       '<button class="btn btn--mini" data-ir="mensagens">Ver mensagens</button>' +
+      '<button class="btn btn--mini" data-ir="timeline">Timeline</button>' +
+      '<button class="btn btn--mini" data-qr>Gerar QR Code do Convite</button>' +
       '<button class="btn btn--mini" data-exportar-tudo>Exportar lista</button>' +
     '</div>';
 }
@@ -481,6 +565,152 @@ function telaMensagens(){
     }).join('') : '<p class="vazio">Nenhuma mensagem ainda.</p>') + '</div>';
 }
 
+/* ------ timeline ------ */
+let tlFiltro = 'todos', tlBusca = '';
+function eventos(){
+  const ev = [];
+  DB.guests.forEach(g => {
+    if (g.created_at) ev.push({ t:g.created_at, tipo:'confirmacoes', txt:g.full_name + (g.attendance_status === 'pending' ? ' registrou interesse' : ' confirmou presença') + (g.companions ? ' (+' + g.companions + ')' : '') });
+    if (g.arrived_at) ev.push({ t:g.arrived_at, tipo:'entregas', txt:g.full_name + ' chegou à festa' });
+  });
+  DB.reservas.forEach(r => {
+    ev.push({ t:r.reserved_at, tipo:'presentes', txt:r.guest_name + ' reservou ' + giftDe(r.gift_id).name });
+    if (r.received_at) ev.push({ t:r.received_at, tipo:'entregas', txt:'Presente recebido: ' + giftDe(r.gift_id).name + ' (' + r.guest_name + ')' });
+    if (r.cancelled_at) ev.push({ t:r.cancelled_at, tipo:'presentes', txt:r.guest_name + ' cancelou ' + giftDe(r.gift_id).name });
+  });
+  DB.fraldas.forEach(f => {
+    if (f.created_at) ev.push({ t:f.created_at, tipo:'fraldas', txt:(f.guest_name || 'Convidado') + ' escolheu fralda tamanho ' + f.size + ' (' + f.package_quantity + ' pct)' });
+  });
+  DB.msgs.forEach(m => {
+    if (m.status !== 'hidden') ev.push({ t:m.created_at, tipo:'mensagens', txt:(m.guest_name || 'Convidado') + ' deixou uma mensagem para ' + (m.recipient_type === 'miguel' ? 'Miguel' : m.recipient_type === 'zoe' ? 'Zoe' : 'o bebê') + (m.capsule ? ' (Cápsula do Tempo)' : '') });
+  });
+  return ev.filter(e => e.t).sort((x,y) => new Date(y.t) - new Date(x.t));
+}
+function telaTimeline(){
+  let ev = eventos();
+  if (tlFiltro !== 'todos') ev = ev.filter(e => e.tipo === tlFiltro);
+  const q = tlBusca.toLowerCase();
+  if (q) ev = ev.filter(e => e.txt.toLowerCase().includes(q));
+  const chips = [['todos','Todos'],['confirmacoes','Confirmações'],['presentes','Presentes'],['fraldas','Fraldas'],['mensagens','Mensagens'],['entregas','Entregas']];
+  $c().innerHTML = '<h2 class="titulo">Timeline</h2>' +
+    '<div class="ferramentas"><input type="search" id="tl-q" placeholder="Pesquisar na timeline" value="' + esc(tlBusca) + '"></div>' +
+    '<div class="chips-tl">' + chips.map(([v,n]) => '<button data-tl-f="' + v + '"' + (tlFiltro === v ? ' class="on"' : '') + '>' + n + '</button>').join('') + '</div>' +
+    '<div>' + (ev.length ? ev.map(e =>
+      '<div class="tl-item"><time>' + fmtData(e.t) + '</time><p>' + esc(e.txt) + '</p></div>').join('') :
+      '<p class="vazio">Nada por aqui ainda.</p>') + '</div>';
+}
+
+/* ------ cápsula do tempo ------ */
+let capBusca = '', capFiltro = 'todas';
+function telaCapsula(){
+  let lista = DB.msgs.filter(m => m.capsule && m.status !== 'hidden');
+  if (capFiltro !== 'todas') lista = lista.filter(m => m.recipient_type === capFiltro);
+  const q = capBusca.toLowerCase();
+  if (q) lista = lista.filter(m => (m.guest_name || '').toLowerCase().includes(q));
+  lista.sort((x,y) => new Date(x.created_at) - new Date(y.created_at));
+  const dest = t => t === 'miguel' ? 'Para Miguel' : t === 'zoe' ? 'Para Zoe' : 'Para o bebê';
+  $c().innerHTML = '<h2 class="titulo">Cápsula do Tempo ⏳</h2>' +
+    '<p style="color:var(--ink-soft);font-size:.86rem;margin-bottom:16px;">Mensagens guardadas para Miguel ou Zoe ler no futuro.</p>' +
+    '<div class="ferramentas">' +
+      '<input type="search" id="cap-q" placeholder="Pesquisar convidado" value="' + esc(capBusca) + '">' +
+      '<select id="cap-f">' + [['todas','Todas'],['miguel','Para Miguel'],['zoe','Para Zoe'],['baby','Para o bebê']].map(([v,n]) => '<option value="' + v + '"' + (capFiltro === v ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>' +
+      '<button class="btn btn--mini" data-csv-capsula>CSV</button>' +
+      '<button class="btn btn--mini" data-pdf-capsula>PDF</button>' +
+      '<button class="btn btn--mini btn--solid" data-livro-capsula>Gerar Livro da Cápsula do Tempo</button>' +
+    '</div><div class="lista-adm">' +
+    (lista.length ? lista.map(m => '<div class="msg-card">' +
+      '<div class="item-adm__topo"><strong>' + esc(m.guest_name || 'Convidado') + '</strong><span class="pill pill--warn">' + dest(m.recipient_type) + '</span></div>' +
+      '<p class="texto">&ldquo;' + esc(m.message) + '&rdquo;</p>' +
+      '<small>' + fmtData(m.created_at) + (m.favorite ? ' · ★ favorita' : '') + '</small>' +
+      '<div class="item-adm__acoes"><button class="btn btn--mini" data-msg-fav="' + m.id + '">' + (m.favorite ? 'Tirar favorita' : '★ Favoritar') + '</button></div>' +
+      '</div>').join('') : '<p class="vazio">Nenhuma mensagem na cápsula ainda.</p>') + '</div>';
+}
+
+/* ------ configurações ------ */
+function telaConfig(){
+  const hist = lerNotifs();
+  $c().innerHTML = '<h2 class="titulo">Configurações</h2>' +
+    '<div class="item-adm" style="margin-bottom:12px;"><label style="font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);">Link oficial do convite (usado no QR Code)</label>' +
+    '<div style="display:flex;gap:8px;margin-top:6px;"><input id="cfg-link" placeholder="https://seusite.netlify.app" value="' + esc(DB.linkConvite || '') + '"><button class="btn btn--mini" data-salvar-link>Salvar</button></div></div>' +
+    '<div class="item-adm" style="margin-bottom:12px;"><div class="item-adm__topo"><strong>Histórico de notificações</strong>' +
+    '<button class="btn btn--mini" data-limpar-notifs>Limpar</button></div>' +
+    (hist.length ? hist.map(n => '<small>' + fmtData(n.t) + ' — ' + esc(n.txt) + '</small>').join('') : '<small>Nenhuma notificação ainda.</small>') + '</div>' +
+    '<div class="item-adm"><div class="item-adm__topo"><strong>Sessão</strong><button class="btn btn--mini btn--no" data-sair-cfg>Sair do painel</button></div>' +
+    '<small>Somente Victor e Paula têm acesso a este painel.</small></div>';
+}
+
+/* ------ busca global ------ */
+function telaBuscaGlobal(q){
+  const ql = q.toLowerCase();
+  const res = [];
+  DB.guests.forEach(g => { if ((g.full_name + ' ' + g.phone + ' ' + (g.notes || '')).toLowerCase().includes(ql)) res.push(['Convidado', g.full_name + ' · ' + g.phone, 'convidados']); });
+  DB.gifts.forEach(g => { if ((g.name + ' ' + g.category + ' ' + (g.description || '')).toLowerCase().includes(ql)) res.push(['Presente', g.name + ' · ' + g.category + ' · ' + statusGift(g), 'presentes']); });
+  DB.reservas.forEach(r => { if ((r.guest_name + ' ' + r.guest_phone + ' ' + (r.message || '')).toLowerCase().includes(ql)) res.push(['Reserva', giftDe(r.gift_id).name + ' — ' + r.guest_name + ' (' + r.status + ')', 'presentes']); });
+  DB.fraldas.forEach(f => { if (((f.guest_name || '') + ' ' + (f.guest_phone || '') + ' ' + f.size + ' ' + f.brand).toLowerCase().includes(ql)) res.push(['Fralda', (f.guest_name || '—') + ' · ' + f.size + ' · ' + f.brand + ' × ' + f.package_quantity, 'fraldas']); });
+  DB.msgs.forEach(m => { if (((m.guest_name || '') + ' ' + m.message).toLowerCase().includes(ql)) res.push(['Mensagem', (m.guest_name || '—') + ' — “' + (m.message.length > 60 ? m.message.slice(0,60) + '…' : m.message) + '”', 'mensagens']); });
+  $c().innerHTML = '<h2 class="titulo">Busca: &ldquo;' + esc(q) + '&rdquo; (' + res.length + ')</h2><div class="lista-adm">' +
+    (res.length ? res.map(([tipo, txt, sec]) =>
+      '<div class="item-adm"><div class="item-adm__topo"><strong>' + esc(txt) + '</strong><span class="pill pill--warn">' + tipo + '</span></div>' +
+      '<div class="item-adm__acoes"><button class="btn btn--mini" data-ir="' + sec + '">Abrir seção</button></div></div>').join('') :
+      '<p class="vazio">Nada encontrado.</p>') + '</div>';
+}
+
+/* ------ notificações ------ */
+const lerNotifs = () => { try { return JSON.parse(localStorage.getItem('adm-notifs') || '[]'); } catch(e) { return []; } };
+function notificar(txt){
+  const hist = lerNotifs();
+  hist.unshift({ t: Date.now(), txt });
+  try { localStorage.setItem('adm-notifs', JSON.stringify(hist.slice(0, 100))); } catch(e) {}
+  let caixa = document.querySelector('.notif');
+  if (!caixa) { caixa = document.createElement('div'); caixa.className = 'notif'; document.body.appendChild(caixa); }
+  const n = document.createElement('div');
+  n.textContent = '🔔 ' + txt;
+  caixa.appendChild(n);
+  setTimeout(() => n.remove(), 5000);
+}
+function notificarMudanca(payload){
+  const t = payload.table, novo = payload.new || {};
+  if (payload.eventType === 'INSERT') {
+    if (t === 'guests') notificar('Nova confirmação de presença: ' + (novo.full_name || ''));
+    if (t === 'gift_reservations') notificar('Novo presente reservado');
+    if (t === 'baby_messages') notificar('Nova mensagem para ' + (novo.recipient_type === 'miguel' ? 'Miguel' : novo.recipient_type === 'zoe' ? 'Zoe' : 'o bebê'));
+    if (t === 'diaper_choices') notificar('Fralda tamanho ' + (novo.size || '') + ' cadastrada');
+  }
+}
+
+/* ------ QR Code ------ */
+async function abrirQR(){
+  const link = (DB.linkConvite || '').trim() || location.origin + location.pathname.replace(/admin\.html$/, '');
+  const dlg = document.createElement('dialog');
+  dlg.innerHTML = '<h2 class="titulo">QR Code do convite</h2>' +
+    '<p style="font-size:.82rem;color:var(--ink-soft);margin-bottom:14px;">' + esc(link) + '</p>' +
+    '<div style="display:flex;justify-content:center;"><canvas id="qr-cv" style="width:240px;height:240px;border:1px solid var(--hairline);"></canvas></div>' +
+    '<div class="item-adm__acoes" style="margin-top:16px;justify-content:center;">' +
+    '<button class="btn btn--mini btn--solid" id="qr-baixar">Baixar PNG</button>' +
+    '<button class="btn btn--mini" id="qr-imprimir">Imprimir</button>' +
+    '<button class="btn btn--mini" id="qr-fechar">Fechar</button></div>';
+  document.body.appendChild(dlg);
+  dlg.showModal();
+  try {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+      s.onload = res; s.onerror = rej; document.head.appendChild(s);
+    });
+    await window.QRCode.toCanvas(document.getElementById('qr-cv'), link, { width: 1024, margin: 2, color: { dark: '#4b4237', light: '#ffffff' } });
+  } catch(e) { toast('Sem conexão para gerar o QR'); }
+  dlg.querySelector('#qr-fechar').addEventListener('click', () => dlg.remove());
+  dlg.querySelector('#qr-baixar').addEventListener('click', () => {
+    const aEl = document.createElement('a');
+    aEl.href = document.getElementById('qr-cv').toDataURL('image/png');
+    aEl.download = 'qr-convite-miguel-ou-zoe.png';
+    aEl.click();
+  });
+  dlg.querySelector('#qr-imprimir').addEventListener('click', () => {
+    imprimir('Convite — Miguel ou Zoe?', '<div style="text-align:center;padding-top:60px;"><img src="' + document.getElementById('qr-cv').toDataURL('image/png') + '" style="width:70mm;height:70mm;"><p style="font-family:var(--serif);margin-top:14px;">' + esc(link) + '</p></div>');
+  });
+}
+
 /* ------ editor de presente ------ */
 function abrirEditorPresente(g){
   const novo = !g;
@@ -543,10 +773,18 @@ function abrirEditorPresente(g){
 }
 
 /* ---------------------------------- render --------------------------------- */
+let buscaGlobal = '';
 function render(){
   montarNavs();
+  if (buscaGlobal.trim().length >= 2) { telaBuscaGlobal(buscaGlobal.trim()); montarBuscaGlobal(); return; }
   ({ inicio:telaInicio, convidados:telaConvidados, fraldas:telaFraldas,
-     presentes:telaPresentes, entregas:telaEntregas, mensagens:telaMensagens }[secao] || telaInicio)();
+     presentes:telaPresentes, entregas:telaEntregas, mensagens:telaMensagens,
+     timeline:telaTimeline, capsula:telaCapsula, config:telaConfig }[secao] || telaInicio)();
+  montarBuscaGlobal();
+}
+function montarBuscaGlobal(){
+  $c().insertAdjacentHTML('afterbegin',
+    '<div class="busca-global"><input type="search" id="busca-global" placeholder="🔍 Busca global — convidados, presentes, mensagens, fraldas..." value="' + esc(buscaGlobal) + '"></div>');
 }
 async function recarregar(){ await API.carregar(); render(); }
 
@@ -637,6 +875,31 @@ document.addEventListener('click', async (e) => {
     if (!xc.dataset.conf) { xc.dataset.conf = '1'; xc.textContent = 'Excluir mesmo?'; return; }
     if (DEMO) DB.guests = DB.guests.filter(g => g.id !== xc.dataset.excluirConv);
     await API.del('guests', xc.dataset.excluirConv); await recarregar(); toast('Registro excluído'); return;
+  }
+  if (e.target.closest('[data-qr]')) { abrirQR(); return; }
+  if (e.target.closest('[data-salvar-link]')) {
+    await API.setSetting('invite_url', document.getElementById('cfg-link').value.trim());
+    await recarregar(); toast('Link salvo'); return;
+  }
+  if (e.target.closest('[data-limpar-notifs]')) {
+    try { localStorage.removeItem('adm-notifs'); } catch(err) {}
+    telaConfig(); montarBuscaGlobal(); return;
+  }
+  if (e.target.closest('[data-sair-cfg]')) { sair(); return; }
+  const tlf = e.target.closest('[data-tl-f]');
+  if (tlf) { tlFiltro = tlf.dataset.tlF; telaTimeline(); montarBuscaGlobal(); return; }
+  if (e.target.closest('[data-csv-capsula]')) {
+    baixarCSV('capsula-do-tempo.csv', [['Convidado','Destinatário','Mensagem','Data','Favorita'],
+      ...DB.msgs.filter(m => m.capsule && m.status !== 'hidden').map(m => [m.guest_name, m.recipient_type, m.message, fmtData(m.created_at), m.favorite ? 'sim' : ''])]); return;
+  }
+  if (e.target.closest('[data-pdf-capsula]')) {
+    imprimir('Cápsula do Tempo', DB.msgs.filter(m => m.capsule && m.status !== 'hidden').map(m =>
+      '<div class="print-msg"><h3>' + esc(m.guest_name || 'Convidado') + ' — ' + fmtData(m.created_at) + '</h3><p>&ldquo;' + esc(m.message) + '&rdquo;</p></div>').join('')); return;
+  }
+  if (e.target.closest('[data-livro-capsula]')) {
+    const caps = DB.msgs.filter(m => m.capsule && m.status !== 'hidden').sort((x,y) => new Date(x.created_at) - new Date(y.created_at));
+    imprimir('', '<div class="print-capa"><h1>Cápsula do Tempo</h1><p>Mensagens de carinho para Miguel ou Zoe</p><p>Chá de bebê + revelação · 29 de agosto</p><p style="margin-top:30px;">Victor &amp; Paula 💛</p></div>' +
+      caps.map(m => '<div class="print-msg"><h3>' + esc(m.guest_name || 'Convidado') + ' <span style="font-weight:normal;color:#888;">— para ' + (m.recipient_type === 'miguel' ? 'Miguel' : m.recipient_type === 'zoe' ? 'Zoe' : 'o bebê') + ' · ' + fmtData(m.created_at) + (m.favorite ? ' ★' : '') + '</span></h3><p style="font-size:1.05rem;">&ldquo;' + esc(m.message) + '&rdquo;</p></div>').join('')); return;
   }
   if (e.target.closest('[data-salvar-prio]')) {
     await API.prioridade(document.getElementById('prio-txt').value.trim());
@@ -758,6 +1021,15 @@ document.addEventListener('click', async (e) => {
   }
 });
 document.addEventListener('input', (e) => {
+  if (e.target.id === 'busca-global') {
+    buscaGlobal = e.target.value;
+    render();
+    const i = document.getElementById('busca-global');
+    if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+    return;
+  }
+  if (e.target.id === 'tl-q') { tlBusca = e.target.value; telaTimeline(); montarBuscaGlobal(); const i = document.getElementById('tl-q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); return; }
+  if (e.target.id === 'cap-q') { capBusca = e.target.value; telaCapsula(); montarBuscaGlobal(); const i = document.getElementById('cap-q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); return; }
   if (e.target.id === 'conv-q') { convBusca = e.target.value; telaConvidados(); document.getElementById('conv-q').focus(); const i = document.getElementById('conv-q'); i.setSelectionRange(i.value.length, i.value.length); }
   if (e.target.id === 'pres-q') { presBusca = e.target.value; telaPresentes(); const i = document.getElementById('pres-q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
   if (e.target.id === 'msg-q') { msgBusca = e.target.value; telaMensagens(); const i = document.getElementById('msg-q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
@@ -767,6 +1039,7 @@ document.addEventListener('change', (e) => {
   if (e.target.id === 'pres-f') { presFiltro = e.target.value; telaPresentes(); }
   if (e.target.id === 'msg-f') { msgFiltro = e.target.value; telaMensagens(); }
   if (e.target.id === 'msg-o') { msgOrdem = e.target.value; telaMensagens(); }
+  if (e.target.id === 'cap-f') { capFiltro = e.target.value; telaCapsula(); montarBuscaGlobal(); }
 });
 
 /* ------------------------------ autenticação ------------------------------ */
@@ -779,7 +1052,10 @@ async function entrarNoPainel(){
   render();
   if (!DEMO && sb) {
     sb.channel('painel')
-      .on('postgres_changes', { event:'*', schema:'public' }, () => { recarregar(); })
+      .on('postgres_changes', { event:'*', schema:'public' }, (payload) => {
+        notificarMudanca(payload);
+        recarregar();
+      })
       .subscribe();
   }
 }
