@@ -254,6 +254,53 @@
     font-size:1.25rem;
     color:var(--ink);
   }
+
+  /* Torcida — resultado público do palpite */
+  .torcida{
+    max-width:420px;margin:44px auto 0;
+    padding-top:36px;
+    border-top:1px solid var(--hairline);
+  }
+  .torcida__titulo{
+    font-family:var(--font-serif);
+    font-style:italic;font-weight:500;
+    font-size:1.15rem;
+    text-align:center;
+    margin-bottom:22px;
+    color:var(--ink);
+  }
+  .torcida__linha{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-size:.92rem;margin-bottom:8px;
+  }
+  .torcida__linha b{
+    font-family:var(--font-serif);font-weight:600;font-size:1.02rem;
+    font-variant-numeric:tabular-nums;
+    transition:opacity .3s ease;
+  }
+  .torcida__linha .miguel-cor{color:var(--blue);}
+  .torcida__linha .zoe-cor{color:var(--pink);}
+  .torcida__barra{
+    display:flex;height:10px;overflow:hidden;
+    background:var(--hairline);
+    margin:4px 0 22px;
+  }
+  .torcida__barra i{
+    display:block;height:100%;
+    transition:width .7s cubic-bezier(.4,0,.2,1);
+  }
+  .torcida__barra i.b-miguel{background:var(--blue);}
+  .torcida__barra i.b-zoe{background:var(--pink);}
+  .torcida__total{
+    text-align:center;
+    font-size:.72rem;font-weight:400;
+    letter-spacing:.24em;text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  @media (prefers-reduced-motion:reduce){
+    .torcida__barra i{transition:none;}
+  }
+
   @media (max-width:560px){
     .vote-cards{grid-template-columns:1fr;}
     .vote-card + .vote-card{border-left:none;border-top:1px solid var(--hairline);}
@@ -880,6 +927,14 @@
         </button>
       </div>
       <p class="vote-result" id="vote-result" aria-live="polite"></p>
+
+      <div class="torcida reveal" id="torcida" hidden aria-live="polite">
+        <p class="torcida__titulo">A torcida até agora</p>
+        <div class="torcida__linha"><span class="miguel-cor">Miguel</span><b id="torcida-miguel-txt">0 votos · 0%</b></div>
+        <div class="torcida__barra"><i class="b-miguel" id="torcida-barra-miguel" style="width:50%"></i><i class="b-zoe" id="torcida-barra-zoe" style="width:50%"></i></div>
+        <div class="torcida__linha"><span class="zoe-cor">Zoe</span><b id="torcida-zoe-txt">0 votos · 0%</b></div>
+        <p class="torcida__total" id="torcida-total">0 palpites registrados</p>
+      </div>
     </div>
   </section>
 
@@ -955,6 +1010,15 @@
 </footer>
 
 <script>
+  // Estado da integração com Supabase (declarado cedo: o palpite salvo é
+  // restaurado logo abaixo, antes do bloco de configuração do Supabase rodar)
+  let sb = null;
+  let statusPresentes = {};
+  let prioridadeFraldas = '';
+  let modoRevelacaoVoto = 'after_vote';
+  let torcida = { miguel: 0, zoe: 0 };
+  const usaSupabase = () => !!sb;
+
   // Contagem regressiva — 29 de agosto de 2026, 15h (horário local de quem abre)
   const alvo = new Date(2026, 7, 29, 15, 0, 0).getTime();
   const els = {
@@ -1010,6 +1074,7 @@
     resultEl.textContent = frases[team];
     try { localStorage.setItem('palpite-bebe', team); } catch(e) {}
     if (celebrar) confete(team);
+    registrarVoto(team);
   }
   document.querySelectorAll('.vote-card').forEach(card => {
     card.addEventListener('click', () => escolher(card.dataset.team, true));
@@ -1019,13 +1084,62 @@
     if (salvo && frases[salvo]) escolher(salvo, false);
   } catch(e) {}
 
+  // ===== Torcida — resultado público do palpite Miguel × Zoe =====
+  function obterTokenVotante(){
+    try {
+      let t = localStorage.getItem('voter-token');
+      if (!t) { t = crypto.randomUUID(); localStorage.setItem('voter-token', t); }
+      return t;
+    } catch(e) { return 'sem-token'; }
+  }
+  async function carregarTorcida(){
+    if (!sb) return;
+    try {
+      const { data } = await sb.from('vote_tally').select('miguel_count,zoe_count').eq('id', 1).maybeSingle();
+      if (data) torcida = { miguel: data.miguel_count || 0, zoe: data.zoe_count || 0 };
+    } catch(e) {}
+  }
+  async function registrarVoto(team){
+    renderTorcida();
+    if (!usaSupabase()) return;
+    try {
+      await sb.rpc('public_cast_vote', { p_token: obterTokenVotante(), p_vote: team });
+      await carregarTorcida();
+      renderTorcida();
+    } catch(e) {}
+  }
+  function renderTorcida(){
+    const wrap = document.getElementById('torcida');
+    if (!wrap) return;
+    let meuVoto = null;
+    try { meuVoto = localStorage.getItem('palpite-bebe'); } catch(e) {}
+
+    if (modoRevelacaoVoto === 'hidden') { wrap.hidden = true; return; }
+    if (modoRevelacaoVoto === 'after_vote' && !meuVoto) { wrap.hidden = true; return; }
+
+    let m = torcida.miguel, z = torcida.zoe;
+    if (!usaSupabase()) {
+      // Sem Supabase configurado ainda: mostra só o palpite deste aparelho.
+      m = meuVoto === 'miguel' ? 1 : 0;
+      z = meuVoto === 'zoe' ? 1 : 0;
+    }
+    const total = m + z;
+    const pctM = total ? Math.round((m / total) * 100) : 50;
+    const pctZ = total ? 100 - pctM : 50;
+
+    wrap.hidden = false;
+    document.getElementById('torcida-miguel-txt').textContent = m + (m === 1 ? ' voto' : ' votos') + ' · ' + pctM + '%';
+    document.getElementById('torcida-zoe-txt').textContent = z + (z === 1 ? ' voto' : ' votos') + ' · ' + pctZ + '%';
+    document.getElementById('torcida-barra-miguel').style.width = pctM + '%';
+    document.getElementById('torcida-barra-zoe').style.width = pctZ + '%';
+    document.getElementById('torcida-total').textContent =
+      total + (total === 1 ? ' palpite registrado' : ' palpites registrados');
+  }
+  renderTorcida();
+
   // ===== Integração Supabase (opcional — cole as credenciais do seu projeto) =====
   const SUPABASE_URL = '';        // ex.: https://xxxx.supabase.co
   const SUPABASE_ANON_KEY = '';   // anon key (pública; os dados são protegidos por RLS)
-  let sb = null;
-  let statusPresentes = {};       // gift_id -> 'reserved' | 'received'
-  let prioridadeFraldas = '';
-  const usaSupabase = () => !!sb;
   async function carregarStatusPresentes(){
     if (!sb) return;
     try {
@@ -1035,19 +1149,30 @@
     } catch(e) {}
   }
   async function iniciarSupabase(){
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { renderTorcida(); return; }
     try {
       const m = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
       sb = m.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       await carregarStatusPresentes();
       try {
-        const { data } = await sb.from('settings').select('value').eq('key','diaper_priority').maybeSingle();
-        prioridadeFraldas = (data && data.value) || '';
+        const { data } = await sb.from('settings').select('key,value');
+        (data || []).forEach(row => {
+          if (row.key === 'diaper_priority') prioridadeFraldas = row.value || '';
+          if (row.key === 'vote_reveal_mode') modoRevelacaoVoto = row.value || 'after_vote';
+        });
       } catch(e) {}
       const rsvp = document.getElementById('form-rsvp-wrap');
       if (rsvp) rsvp.hidden = false;
+      await carregarTorcida();
+      renderTorcida();
+      sb.channel('torcida-publica')
+        .on('postgres_changes', { event:'UPDATE', schema:'public', table:'vote_tally' }, (payload) => {
+          if (payload.new) { torcida = { miguel: payload.new.miguel_count, zoe: payload.new.zoe_count }; }
+          renderTorcida();
+        })
+        .subscribe();
       if (location.hash.startsWith('#presentes')) rota();
-    } catch(e) { sb = null; }
+    } catch(e) { sb = null; renderTorcida(); }
   }
   window.addEventListener('focus', () => {
     if (sb && location.hash.startsWith('#presentes')) carregarStatusPresentes().then(rota);

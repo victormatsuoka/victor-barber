@@ -205,7 +205,8 @@ const fmtData = ts => ts ? new Date(ts).toLocaleString('pt-BR', { day:'2-digit',
 const toast = (t) => { const el = document.getElementById('toast'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 2600); };
 
 let sb = null;
-let DB = { guests:[], gifts:[], reservas:[], fraldas:[], msgs:[], prioridade:'' };
+let DB = { guests:[], gifts:[], reservas:[], fraldas:[], msgs:[], prioridade:'',
+  linkConvite:'', modoRevelacaoVoto:'after_vote', votos:{ miguel_count:0, zoe_count:0 } };
 
 /* ------------------------- driver de demonstração ------------------------- */
 function seedDemo(){
@@ -235,25 +236,31 @@ function seedDemo(){
     { id:crypto.randomUUID(), guest_name:'Ana Sato', guest_phone:'080-3333-4444', recipient_type:'miguel', message:'Miguel ou Zoe, você já é muito amado!', favorite:false, status:'read', created_at:new Date().toISOString() }
   ];
   DB.prioridade = 'Precisamos mais dos tamanhos M e L 💛';
+  DB.modoRevelacaoVoto = 'after_vote';
+  DB.votos = { miguel_count: DB.guests.filter(g => g.gender_vote === 'miguel').length,
+               zoe_count: DB.guests.filter(g => g.gender_vote === 'zoe').length };
 }
 
 /* ----------------------------- camada de dados ----------------------------- */
 const API = {
   async carregar(){
     if (DEMO) return;
-    const [g, gf, r, f, m, s] = await Promise.all([
+    const [g, gf, r, f, m, s, vt] = await Promise.all([
       sb.from('guests').select('*').order('created_at', { ascending:false }),
       sb.from('gifts').select('*').order('display_order'),
       sb.from('gift_reservations').select('*').order('reserved_at', { ascending:false }),
       sb.from('diaper_choices').select('*').order('created_at', { ascending:false }),
       sb.from('baby_messages').select('*').order('created_at', { ascending:false }),
-      sb.from('settings').select('*')
+      sb.from('settings').select('*'),
+      sb.from('vote_tally').select('*').eq('id', 1).maybeSingle()
     ]);
     DB.guests = g.data || []; DB.gifts = gf.data || []; DB.reservas = r.data || [];
     DB.fraldas = f.data || []; DB.msgs = m.data || [];
     const cfg = {}; (s.data || []).forEach(x => cfg[x.key] = x.value);
     DB.prioridade = cfg.diaper_priority || '';
     DB.linkConvite = cfg.invite_url || '';
+    DB.modoRevelacaoVoto = cfg.vote_reveal_mode || 'after_vote';
+    DB.votos = vt.data || { miguel_count:0, zoe_count:0 };
   },
   async up(tabela, obj){
     if (DEMO) { toast('Demonstração: nada foi salvo'); return { error:null }; }
@@ -269,7 +276,11 @@ const API = {
     await sb.from('settings').upsert({ key:'diaper_priority', value:v });
   },
   async setSetting(k, v){
-    if (DEMO) { if (k === 'invite_url') DB.linkConvite = v; return; }
+    if (DEMO) {
+      if (k === 'invite_url') DB.linkConvite = v;
+      if (k === 'vote_reveal_mode') DB.modoRevelacaoVoto = v;
+      return;
+    }
     await sb.from('settings').upsert({ key:k, value:v });
   },
   async uploadImagem(file, giftId){
@@ -346,8 +357,8 @@ function telaInicio(){
   const msgs = DB.msgs.filter(m => m.status !== 'hidden');
   const novas = msgs.filter(m => m.status === 'new').length;
   const fav = msgs.filter(m => m.favorite).length;
-  const miguel = DB.guests.filter(g => g.gender_vote === 'miguel').length;
-  const zoe = DB.guests.filter(g => g.gender_vote === 'zoe').length;
+  const miguel = (DB.votos && DB.votos.miguel_count) || 0;
+  const zoe = (DB.votos && DB.votos.zoe_count) || 0;
   const card = (v,l) => '<div class="cardr"><b>' + v + '</b><span>' + l + '</span></div>';
   const pct = (n,d) => Math.round(100 * n / Math.max(d,1));
   const duo = (l1,v1,l2,v2) => {
@@ -629,9 +640,20 @@ function telaCapsula(){
 /* ------ configurações ------ */
 function telaConfig(){
   const hist = lerNotifs();
+  const modos = [
+    ['always', 'Mostrar resultado antes de votar', 'Convidados veem a torcida mesmo sem ter votado ainda.'],
+    ['after_vote', 'Mostrar só depois de votar', 'Cada convidado só vê os números depois de registrar o próprio palpite (padrão).'],
+    ['hidden', 'Ocultar temporariamente', 'A torcida fica escondida para todo mundo — útil para guardar surpresa até a revelação.']
+  ];
   $c().innerHTML = '<h2 class="titulo">Configurações</h2>' +
     '<div class="item-adm" style="margin-bottom:12px;"><label style="font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);">Link oficial do convite (usado no QR Code)</label>' +
     '<div style="display:flex;gap:8px;margin-top:6px;"><input id="cfg-link" placeholder="https://seusite.netlify.app" value="' + esc(DB.linkConvite || '') + '"><button class="btn btn--mini" data-salvar-link>Salvar</button></div></div>' +
+    '<div class="item-adm" style="margin-bottom:12px;"><strong>Resultado público da torcida Miguel × Zoe</strong>' +
+    '<div style="display:grid;gap:8px;margin-top:12px;">' + modos.map(([v, titulo, desc]) =>
+      '<label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding:10px;border:1px solid ' + (DB.modoRevelacaoVoto === v ? 'var(--gold)' : 'var(--hairline)') + ';">' +
+      '<input type="radio" name="modo-voto" value="' + v + '" style="width:auto;margin-top:3px;"' + (DB.modoRevelacaoVoto === v ? ' checked' : '') + '>' +
+      '<span><strong style="font-size:.86rem;">' + titulo + '</strong><br><small style="color:var(--ink-soft);">' + desc + '</small></span></label>').join('') +
+    '</div></div>' +
     '<div class="item-adm" style="margin-bottom:12px;"><div class="item-adm__topo"><strong>Histórico de notificações</strong>' +
     '<button class="btn btn--mini" data-limpar-notifs>Limpar</button></div>' +
     (hist.length ? hist.map(n => '<small>' + fmtData(n.t) + ' — ' + esc(n.txt) + '</small>').join('') : '<small>Nenhuma notificação ainda.</small>') + '</div>' +
@@ -1040,6 +1062,11 @@ document.addEventListener('change', (e) => {
   if (e.target.id === 'msg-f') { msgFiltro = e.target.value; telaMensagens(); }
   if (e.target.id === 'msg-o') { msgOrdem = e.target.value; telaMensagens(); }
   if (e.target.id === 'cap-f') { capFiltro = e.target.value; telaCapsula(); montarBuscaGlobal(); }
+  if (e.target.name === 'modo-voto') {
+    DB.modoRevelacaoVoto = e.target.value;
+    API.setSetting('vote_reveal_mode', e.target.value).then(() => toast('Preferência da torcida salva'));
+    telaConfig(); montarBuscaGlobal();
+  }
 });
 
 /* ------------------------------ autenticação ------------------------------ */
