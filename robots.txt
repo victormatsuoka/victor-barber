@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /cha-revelacao/
+
+Sitemap: https://victorbarberjp.netlify.app/sitemap.xml
